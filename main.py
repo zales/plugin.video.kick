@@ -647,13 +647,12 @@ def list_followed():
     lang_val = addon.getSetting('lang')
 
     raw = _api_get(URL_FOLLOWED)
-    # Internal API returns {"channels": [...]}, developer API might return {"data": [...]}
+    # Internal API returns {"channels": [...]}, but requires session token (email/password login)
+    # Developer OAuth token from id.kick.com returns 401 here
     channels = raw.get('channels') or raw.get('data') or []
-    if not raw:
-        # Token may not be accepted by internal API — try developer API
-        dev_raw = _api_get('https://api.kick.com/public/v1/channels')
-        channels = dev_raw.get('data') or []
-        xbmc.log('KICKCOMMB: fell back to developer API for followed channels, got {} items'.format(len(channels)), xbmc.LOGWARNING)
+    if not channels and not raw:
+        # 401 = OAuth token not accepted by internal API
+        xbmc.log('KICKCOMMB: followed channels unavailable — OAuth token rejected by internal API', xbmc.LOGWARNING)
     add_header(str(language(30015)))
     for x in channels:
         # Internal API: channel_slug, user_username, profile_picture, is_live
@@ -668,9 +667,10 @@ def list_followed():
                  contextmenu=make_follow_menu(slug, True),
                  folder=True)
     if not channels:
-        add_header(str(language(30017)))
+        add_header('[COLOR orange]Sledovane kanaly vyzaduji prihlaseni emailem a heslem[/COLOR]')
 
     categories = _api_get(URL_TOP_CATEGORIES)
+    # URL_TOP_CATEGORIES also returns 401 with OAuth token — skip categories in that case
     if isinstance(categories, list) and categories:
         add_header(str(language(30016)))
         for x in categories:
