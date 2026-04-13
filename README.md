@@ -5,18 +5,16 @@
 ![Version](https://img.shields.io/github/v/release/zales/plugin.video.kick)
 
 A Kodi add-on for [kick.com](https://kick.com) — the live streaming platform.  
-Watch live streams, browse VODs and clips, follow your favourite channels, all from inside Kodi.
+Watch live streams, browse VODs and clips, all from inside Kodi.
 
 ## Features
 
 - **Live streams** — browse by language (41 languages) and category
-- **Categories & subcategories** — Games, IRL, Music, Gambling, Creative, Alternative
+- **Categories & subcategories** — all Kick categories with cursor pagination
 - **Channel pages** — live stream indicator, past VODs, clips
 - **Search** — find channels and categories instantly
-- **Account login** — including 2FA support
-- **Follow / unfollow** — channels and categories, with context menu
 - **HLS playback** — via InputStream Adaptive with optional quality selector
-- **Cloudflare bypass** — via bundled cloudscraper
+- **Cloudflare Worker proxy** — at [kodi.zales.dev](https://kodi.zales.dev) to bypass Kick WAF
 - **UI languages** — English, Czech, Polish
 
 ## Requirements
@@ -47,13 +45,6 @@ cd ..
 zip -r plugin.video.kick.zip plugin.video.kick \
   --exclude "*/.git*" --exclude "*/__pycache__/*" --exclude "*/.DS_Store"
 ```
-
-## Bundled libraries
-
-- [cloudscraper](https://github.com/venomous/cloudscraper) — MIT License  
-  Used to bypass Cloudflare bot protection on kick.com API endpoints.
-- [requests-toolbelt](https://github.com/requests/toolbelt) — Apache 2.0 License  
-  Dependency of cloudscraper.
 
 ## License
 

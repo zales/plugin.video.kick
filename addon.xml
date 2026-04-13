@@ -12,7 +12,7 @@
 
     <extension point="xbmc.addon.metadata">
         <summary lang="en">Watch live streams, VODs and clips from kick.com</summary>
-        <description lang="en">Browse live channels, categories, VODs and clips from kick.com. Supports login, following channels and categories, search, and HLS playback via InputStream Adaptive.</description>
+        <description lang="en">Browse live channels by language and category, channel pages with VODs and clips, search, and HLS playback via InputStream Adaptive. Uses a Cloudflare Worker proxy to bypass Kick WAF.</description>
         <disclaimer lang="en">This addon is not affiliated with kick.com.</disclaimer>
         <language>en</language>
         <platform>all</platform>
@@ -22,7 +22,7 @@
         <assets>
             <icon>icon.png</icon>
         </assets>
-        <news>v2.4.1 - code cleanup, removed dead auth code, fix VOD playback via proxy</news>
+        <news>v2.4.3 - fix duplicate add-to-favourites, rely on Kodi built-in</news>
     </extension>
 </addon>
 
