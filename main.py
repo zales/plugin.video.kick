@@ -404,10 +404,11 @@ def add_favourite():
         'jsonrpc': '2.0',
         'method':  'Favourites.AddFavourite',
         'params':  {
-            'title':     name,
-            'type':      'media',
-            'path':      fav_url,
-            'thumbnail': img,
+            'title':           name,
+            'type':            'window',
+            'window':          'videos',
+            'windowparameter': fav_url,
+            'thumbnail':       img,
         },
         'id': 1,
     }))

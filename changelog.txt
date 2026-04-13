@@ -1,3 +1,17 @@
+2.4.2
+- fix: favourites type changed from media to window so channel folders open correctly in Kodi
+
+2.4.1
+- refactor: remove dead auth/login/follow code (~378 lines), fix VOD proxy URL, clean imports
+
+2.4.0
+- fix: live channels and search broken by Kick WAF blocking direct HTTP requests
+- added Cloudflare Worker proxy (kodi.zales.dev) to bypass WAF
+- migrated to public API (api.kick.com/public/v1+v2) with client_credentials token
+
+2.3.3
+- remove login from settings UI (not needed, was causing confusion)
+
 2.3.2
 - add to Kodi favourites context menu on channels and live streams
 - login removed from main menu (not needed for browsing)
