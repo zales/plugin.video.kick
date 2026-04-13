@@ -1,3 +1,8 @@
+2.3.2
+- add to Kodi favourites context menu on channels and live streams
+- login removed from main menu (not needed for browsing)
+- fixed followed channels showing own channel instead of subscriptions
+
 2.3.1
 - fixed followed channels not loading with Kick OAuth token
 - handle both internal and developer API response formats
