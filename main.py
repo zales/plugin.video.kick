@@ -59,7 +59,7 @@ session.headers.update({'User-Agent': UA, 'Accept': 'application/json'})
 
 # Token cache: stored in the home Window so it persists across plugin invocations
 # within a single Kodi session (each plugin call is a new Python process).
-_WIN       = xbmc.Window(10000)
+_WIN       = xbmcgui.Window(10000)
 _TOKEN_KEY = 'kick_app_token'
 
 
