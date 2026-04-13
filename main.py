@@ -294,9 +294,9 @@ def list_channel(slug):
 @plugin.route('/vods/<slug>')
 def list_vods(slug):
     """List a channel's previous livestreams (VODs) via Worker proxy."""
-    data = (_api_get(URL_PROXY_CHANNEL.format(slug=quote(slug, safe='')))
+    vods = (_api_get(URL_PROXY_CHANNEL.format(slug=quote(slug, safe='')))
             .get('previous_livestreams') or [])
-    for x in data:
+    for x in vods:
         title_raw  = clean_title(x.get('session_title'))
         duration   = int(x.get('duration') or 0) // 1000
         thumbnail  = (x.get('thumbnail') or {}).get('src', ICON)
@@ -422,7 +422,7 @@ def list_search():
 @plugin.route('/search_dialog')
 def search_dialog():
     """Open a keyboard dialog and navigate to search results for the entered query."""
-    query = xbmcgui.Dialog().input(str(language(30038)), type=xbmcgui.INPUT_ALPHANUM)
+    query = xbmcgui.Dialog().input(str(language(30038)), type=xbmcgui.INPUT_ALPHANUM).strip()
     if query:
         xbmc.executebuiltin('Container.Update({})'.format(
             plugin.url_for(list_search, q=query)))

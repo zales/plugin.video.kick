@@ -1,3 +1,7 @@
+2.5.9
+- polish: strip whitespace from search query input
+- polish: rename internal variable for clarity
+
 2.5.8
 - fix: xbmcgui.Window instead of xbmc.Window (crash on startup)
 
