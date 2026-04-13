@@ -1,0 +1,184 @@
+# Kodi Media Center language file
+# Addon Name: Kick.com
+# Addon id: plugin.video.kick
+# Addon Provider:
+msgid ""
+msgstr ""
+"Project-Id-Version: Kodi Addons\n"
+"Report-Msgid-Bugs-To: https://github.com/zales/plugin.video.kick/issues\n"
+"Last-Translator: xxxxx\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgctxt "#30000"
+msgid "Language: "
+msgstr ""
+
+msgctxt "#30001"
+msgid "Log in"
+msgstr ""
+
+msgctxt "#30002"
+msgid "Following"
+msgstr ""
+
+msgctxt "#30003"
+msgid "Live channels"
+msgstr ""
+
+msgctxt "#30004"
+msgid "Categories"
+msgstr ""
+
+msgctxt "#30005"
+msgid "Search"
+msgstr ""
+
+msgctxt "#30006"
+msgid "[B][I]Logout[/B][/I]"
+msgstr ""
+
+msgctxt "#30007"
+msgid "Games"
+msgstr ""
+
+msgctxt "#30008"
+msgid "IRL"
+msgstr ""
+
+msgctxt "#30009"
+msgid "Music"
+msgstr ""
+
+msgctxt "#30010"
+msgid "Gambling"
+msgstr ""
+
+msgctxt "#30011"
+msgid "Creative"
+msgstr ""
+
+msgctxt "#30012"
+msgid "Alternative"
+msgstr ""
+
+msgctxt "#30013"
+msgid "Select "
+msgstr ""
+
+msgctxt "#30014"
+msgid "language"
+msgstr ""
+
+msgctxt "#30015"
+msgid "[COLOR khaki][B]==== Following channels ===[/B][/COLOR]"
+msgstr ""
+
+msgctxt "#30016"
+msgid "[COLOR khaki][B]=== Following categories ===[/B][/COLOR]"
+msgstr ""
+
+msgctxt "#30017"
+msgid "[I]- no following channels -[/I]"
+msgstr ""
+
+msgctxt "#30018"
+msgid "[I]- no following categories -[/I]"
+msgstr ""
+
+msgctxt "#30019"
+msgid "[B][COLOR gold]Unfollow[/B][/COLOR]"
+msgstr ""
+
+msgctxt "#30020"
+msgid ">> next page >>"
+msgstr ""
+
+msgctxt "#30021"
+msgid "[COLOR yellowgreen][B]OK[/B][/COLOR]"
+msgstr ""
+
+msgctxt "#30022"
+msgid "Added"
+msgstr ""
+
+msgctxt "#30023"
+msgid "[B][COLOR gold]Follow[/B][/COLOR]"
+msgstr ""
+
+msgctxt "#30024"
+msgid "[B][COLOR khaki]Videos[/COLOR] "
+msgstr ""
+
+msgctxt "#30025"
+msgid "[B][COLOR khaki]Clips[/COLOR] "
+msgstr ""
+
+msgctxt "#30026"
+msgid "Please enter digit code sent to you"
+msgstr ""
+
+msgctxt "#30027"
+msgid "[COLOR yellowgreen][B]Logged in[/B][/COLOR]"
+msgstr ""
+
+msgctxt "#30028"
+msgid "[COLOR orangered][B]Check your credentials[/B][/COLOR]"
+msgstr ""
+
+msgctxt "#30029"
+msgid "Nothing found"
+msgstr ""
+
+msgctxt "#30030"
+msgid "Logging out will require you to enter the code again.\n"
+"Are you sure?\n"
+msgstr ""
+
+msgctxt "#30031"
+msgid "[COLOR orange]Warning[/COLOR]"
+msgstr ""
+
+msgctxt "#30032"
+msgid "YES"
+msgstr ""
+
+msgctxt "#30033"
+msgid "NO"
+msgstr ""
+
+msgctxt "#30034"
+msgid "My Account"
+msgstr ""
+
+msgctxt "#30035"
+msgid "Login/ email"
+msgstr ""
+
+msgctxt "#30036"
+msgid "Password"
+msgstr ""
+
+msgctxt "#30037"
+msgid "kick.com"
+msgstr ""
+
+msgctxt "#30038"
+msgid "Search..."
+msgstr ""
+
+msgctxt "#30039"
+msgid "video quality"
+msgstr ""
+
+msgctxt "#30040"
+msgid "Ask video quality"
+msgstr ""
+
+msgctxt "#30041"
+msgid "Settings"
+msgstr ""

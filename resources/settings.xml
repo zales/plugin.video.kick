@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings>
+
+    <!-- Account -->
+    <category label="30034">
+        <setting id="username" type="text" label="30035" default="" />
+        <setting id="password" type="text" label="30036" default="" option="hidden" />
+    </category>
+
+    <!-- Playback -->
+    <category label="30039">
+        <setting id="askqual" type="bool" label="30040" default="false" />
+    </category>
+
+    <!-- Internal (not shown in UI) -->
+    <setting id="auth"         type="text" visible="false" default="0"       />
+    <setting id="auth_headers" type="text" visible="false" default=""        />
+    <setting id="lang"         type="text" visible="false" default="en"      />
+    <setting id="lang_lab"     type="text" visible="false" default="english" />
+
+</settings>

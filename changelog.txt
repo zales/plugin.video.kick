@@ -1,0 +1,37 @@
+1.7
+- expanded language list from 16 to 41 (matches current kick.com UI)
+- fixed BBCode tag ordering in LIVE badge
+- fixed apply_auth() returning True on JSON parse failure
+- fixed _fetch_xsrf() missing timeout and error handling
+- fixed category/subcategory slug missing URL encoding
+- fixed cloudscraper UA being overwritten by okhttp UA
+- removed Host header from HLS manifest headers (CDN compatibility)
+- extracted stream User-Agent to UA_STREAM constant
+- removed unused urlparse import
+
+- bundled cloudscraper to bypass Cloudflare bot protection
+
+1.5
+- fixed channel VODs crashing (was passing 100KB URL parameter, now re-fetches by slug)
+- removed unnecessary XSRF fetch from search
+
+1.4
+- replaced cloudscraper with standard requests (kick.com API does not require bypass)
+- removed all bundled libraries, plugin now only depends on Kodi system modules
+
+1.3
+- code refactoring and cleanup
+- removed bundled requests/urllib3 (now uses Kodi system requests)
+- renamed all identifiers to English
+- added Czech language translation
+- fixed several bugs (empty search directory, login XSRF handling, follow notification)
+- removed unused imports and dead code
+
+1.2
+- select streams quality
+
+1.1
+- select streams language
+
+1.0
+- initial version 
