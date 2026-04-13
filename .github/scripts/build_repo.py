@@ -60,15 +60,19 @@ md5 = hashlib.md5(addons_xml.encode('utf-8')).hexdigest()
 with open(os.path.join(OUT_DIR, 'addons.xml.md5'), 'w') as f:
     f.write(md5)
 
-# --- stable shortlink: repo.zip always points to latest repository addon ---
+# --- stable shortlinks ---
 shutil.copy(repo_zip_path, os.path.join(OUT_DIR, 'repo.zip'))
+plugin_zip_src = os.path.join(addon_out, zip_name)
+if os.path.exists(plugin_zip_src):
+    shutil.copy(plugin_zip_src, os.path.join(OUT_DIR, 'plugin.zip'))
 
 # --- static files ---
 open(os.path.join(OUT_DIR, '.nojekyll'), 'w').close()
 
-repo_url       = 'https://kodi.zales.dev'
-repo_zip_url   = f'{repo_url}/{REPO_ID}/{repo_zip}'
-repo_short_url = f'{repo_url}/repo.zip'
+repo_url        = 'https://kodi.zales.dev'
+repo_zip_url    = f'{repo_url}/{REPO_ID}/{repo_zip}'
+repo_short_url  = f'{repo_url}/repo.zip'
+plugin_zip_url  = f'{repo_url}/plugin.zip'
 html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -94,11 +98,17 @@ html = f"""<!DOCTYPE html>
   <li>Kodi &rarr; <b>Add-ons &rarr; Install from zip file</b> &rarr; select the downloaded zip</li>
 </ol>
 
-<h2>2 — Install the add-on</h2>
+<h2>2a — Install via repository (recommended — auto-updates)</h2>
 <ol>
   <li>Kodi &rarr; <b>Add-ons &rarr; Install from repository &rarr; KICK.com Repository</b></li>
   <li>Select <b>Video add-ons &rarr; KICK.com</b> &rarr; Install</li>
   <li>The add-on will update automatically from now on</li>
+</ol>
+
+<h2>2b — Install plugin directly (no auto-updates)</h2>
+<ol>
+  <li>Download: <a href="{plugin_zip_url}">plugin.zip</a> &nbsp;<code>{plugin_zip_url}</code></li>
+  <li>Kodi &rarr; <b>Add-ons &rarr; Install from zip file</b> &rarr; select the downloaded zip</li>
 </ol>
 
 <p><a href="https://github.com/zales/{ADDON_ID}">&larr; GitHub source</a></p>
