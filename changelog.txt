@@ -1,3 +1,15 @@
+2.3.1
+- fixed followed channels not loading with Kick OAuth token
+- handle both internal and developer API response formats
+
+2.3.0
+- Google login replaced with native Kick OAuth 2.1 PKCE flow
+- no more bookmarklet or script paste — standard Kick login page
+- Kodi repository directory listing fixed (was showing blank page)
+
+2.2.1
+- split javascript: prefix — user types it manually to bypass browser security
+
 2.0.0
 - new Kick.com logo icon
 - Kodi 21 repository support with <dir> schema
