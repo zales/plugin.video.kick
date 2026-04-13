@@ -1,3 +1,6 @@
+2.5.2
+- fix: hide Kodi duplicate add-to-favourites (replaceItems=True)
+
 2.5.1
 - fix: favourites use channel slug as stable title instead of live stream title
 
