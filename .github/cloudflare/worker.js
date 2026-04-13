@@ -16,7 +16,16 @@ export default {
       const obj = await env.BUCKET.get(key);
       if (!obj) return new Response('Not Found', { status: 404 });
       const headers = new Headers();
-      headers.set('Content-Type', obj.httpMetadata?.contentType || 'application/octet-stream');
+      const ext = key.split('.').pop().toLowerCase();
+      const mimeTypes = {
+        xml: 'application/xml',
+        md5: 'text/plain',
+        zip: 'application/zip',
+        png: 'image/png',
+        jpg: 'image/jpeg',
+        jpeg: 'image/jpeg',
+      };
+      headers.set('Content-Type', mimeTypes[ext] || obj.httpMetadata?.contentType || 'application/octet-stream');
       headers.set('Cache-Control', 'public, max-age=300');
       return new Response(obj.body, { headers });
     }
