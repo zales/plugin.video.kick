@@ -53,8 +53,13 @@ NEXT_PAGE_IMG = RESOURCES + 'right.png'
 # ---------------------------------------------------------------------------
 # Session
 # ---------------------------------------------------------------------------
-session = requests.Session()
+session    = requests.Session()
 session.headers.update({'User-Agent': UA, 'Accept': 'application/json'})
+
+# Token cache: stored in the home Window so it persists across plugin invocations
+# within a single Kodi session (each plugin call is a new Python process).
+_WIN       = xbmc.Window(10000)
+_TOKEN_KEY = 'kick_app_token'
 
 
 def _api_get(url):
@@ -69,26 +74,24 @@ def _api_get(url):
         return {}
 
 
-_APP_TOKEN = ''
-
-
 def _get_app_token():
-    """Return a cached client_credentials Bearer token from the Worker."""
-    global _APP_TOKEN
-    if _APP_TOKEN:
-        return _APP_TOKEN
+    """Return a Bearer token, cached in the home Window property across requests."""
+    token = _WIN.getProperty(_TOKEN_KEY)
+    if token:
+        return token
     try:
         r = session.get(URL_APP_TOKEN, timeout=10)
         r.raise_for_status()
-        _APP_TOKEN = r.json().get('token', '')
+        token = r.json().get('token', '')
+        if token:
+            _WIN.setProperty(_TOKEN_KEY, token)
     except Exception as exc:
         xbmc.log('KICK: app-token failed: {}'.format(exc), xbmc.LOGERROR)
-    return _APP_TOKEN
+    return token
 
 
 def _pub_get(url):
     """GET a Kick public API URL with Bearer app token; return parsed JSON or {}."""
-    global _APP_TOKEN
     token = _get_app_token()
     if not token:
         return {}
@@ -97,7 +100,7 @@ def _pub_get(url):
         xbmc.log('KICK: PUB {} → {}'.format(url[:120], r.status_code), xbmc.LOGINFO)
         if r.status_code == 401:
             # Token expired — clear cache and retry once
-            _APP_TOKEN = ''
+            _WIN.setProperty(_TOKEN_KEY, '')
             token = _get_app_token()
             if not token:
                 return {}
@@ -111,7 +114,7 @@ def _pub_get(url):
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-LIVE_BADGE = '     [B][COLOR yellowgreen]LIVE[/COLOR][/B]'
+LIVE_BADGE = ' · [B][COLOR yellowgreen]LIVE[/COLOR][/B]'
 
 LANGUAGES = [
     ('af',  'afrikaans'),    ('sq',  'albanian'),    ('ar',  'arabic'),
@@ -137,13 +140,13 @@ def clean_title(s):
     return ''.join(c for c in s if 'So' not in unicodedata.category(c))
 
 
-def add_item(url, name, image, infoLabels=None, IsPlayable=False, folder=False):
+def add_item(url, name, image, infoLabels=None, IsPlayable=False, folder=False, icon=None):
     """Create a ListItem and add it to the current directory listing."""
     li = xbmcgui.ListItem(label=name)
     if IsPlayable:
         li.setProperty('IsPlayable', 'True')
     li.setInfo(type='video', infoLabels=infoLabels or {'title': name})
-    li.setArt({'thumb': image, 'poster': image, 'banner': image})
+    li.setArt({'thumb': image, 'poster': image, 'banner': image, 'icon': icon or image})
     xbmcplugin.addDirectoryItem(handle=plugin.handle, url=url, listitem=li, isFolder=folder)
 
 
@@ -232,7 +235,7 @@ def live():
         label     = '[B]{}[/B] {} [{}]'.format(slug, title_raw, viewers)
         add_item(plugin.url_for(list_channel, slug=slug), label, thumbnail,
                  infoLabels={'title': label, 'plot': label},
-                 folder=True)
+                 icon=pic, folder=True)
     cursor = (jsdata.get('pagination') or {}).get('next_cursor')
     if cursor:
         sep      = '&' if '?' in url else '?'
@@ -340,7 +343,7 @@ def _resolve_stream(slug):
     """Resolve a slug/URL to a playable HLS stream URL, or None."""
     if slug.endswith('.mp4') or slug.endswith('.m3u8'):
         return slug
-    if slug.startswith('https://kodi.zales.dev'):
+    if slug.startswith(WORKER_BASE):
         # Worker proxy for VOD: returns {"url": "..."}
         return _api_get(slug).get('url')
     if slug.startswith('http'):
@@ -415,8 +418,6 @@ def search_dialog():
 def settings():
     """Open the addon settings dialog."""
     addon.openSettings()
-
-
 
 
 if __name__ == '__main__':

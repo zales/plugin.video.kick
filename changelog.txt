@@ -1,3 +1,9 @@
+2.5.5
+- fix: token cached in Kodi Window property (persists across plugin invocations)
+- fix: LIVE badge uses clean separator instead of whitespace padding
+- fix: profile picture shown as icon in live list
+- fix: _resolve_stream uses WORKER_BASE constant instead of hardcoded string
+
 2.5.4
 - refactor: move imports to top, rename session variable
 - fix: app token auto-refresh on 401 (no more Kodi restart needed)
