@@ -27,7 +27,7 @@ export default {
         jpeg: 'image/jpeg',
       };
       headers.set('Content-Type', mimeTypes[ext] || obj.httpMetadata?.contentType || 'application/octet-stream');
-      headers.set('Cache-Control', 'public, max-age=300');
+      headers.set('Cache-Control', ext === 'zip' ? 'no-cache' : 'public, max-age=300');
       headers.set('Accept-Ranges', 'bytes');
       if (obj.range) {
         const { offset, length } = obj.range;
