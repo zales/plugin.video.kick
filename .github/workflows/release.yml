@@ -68,6 +68,4 @@ jobs:
           npm install -g wrangler@4 --quiet
           # Substitute KV namespace ID into wrangler.toml
           sed -i "s|\$KV_AUTH_RELAY_ID|${{ secrets.CF_KV_AUTH_RELAY_ID }}|g" wrangler.toml
-          # Set Google OAuth client secret as a Cloudflare Worker secret
-          echo "${{ secrets.GOOGLE_CLIENT_SECRET }}" | npx wrangler secret put GOOGLE_CLIENT_SECRET
           npx wrangler deploy

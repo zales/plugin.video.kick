@@ -23,5 +23,4 @@ jobs:
         run: |
           npm install -g wrangler@4 --quiet
           sed -i "s|\$KV_AUTH_RELAY_ID|${{ secrets.CF_KV_AUTH_RELAY_ID }}|g" wrangler.toml
-          echo "${{ secrets.GOOGLE_CLIENT_SECRET }}" | npx wrangler secret put GOOGLE_CLIENT_SECRET
           npx wrangler deploy
