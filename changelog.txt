@@ -1,3 +1,10 @@
+2.5.7
+- fix: clean_title uses comprehensive regex instead of fragmented unicodedata checks
+- fix: live() cursor pagination uses parse_qs/urlencode (consistent with subcategories)
+- fix: list_vods uses path param /vods/<slug> (consistent with list_clips)
+- fix: remove deprecated inputstream.adaptive.manifest_update_parameter
+- fix: traceback import moved to top-level imports
+
 2.5.6
 - fix: replace deprecated setInfo() with Kodi 19+ getVideoInfoTag() API
 - fix: remove dead /categories back-compat route

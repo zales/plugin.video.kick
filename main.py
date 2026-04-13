@@ -1,6 +1,7 @@
 # -*- coding: UTF-8 -*-
 """Kodi plugin for kick.com."""
-import unicodedata
+import re
+import traceback
 from urllib.parse import quote, quote_plus, parse_qs, urlencode, urlparse
 
 import requests
@@ -134,10 +135,23 @@ LANGUAGES = [
 ]
 
 
+# Emoji / symbol characters to strip from stream titles
+_RE_STRIP = re.compile(
+    '['
+    '\U0001F000-\U0001FFFF'   # Misc symbols, emoticons, transport, etc.
+    '\U00002600-\U000027BF'   # Misc symbols, dingbats
+    '\U0000FE00-\U0000FE0F'   # Variation selectors
+    '\U00020000-\U0002A6DF'   # CJK extension B
+    '\u200d'                  # Zero-width joiner
+    '\uFE0F'                  # Variation selector-16
+    ']+',
+    flags=re.UNICODE,
+)
+
+
 def clean_title(s):
-    """Strip newlines, known emoji, and Unicode Symbol-other characters from a string."""
-    s = (s or '').replace('\n', ' ').replace('\U0001f534', '').replace('\U0001f42a', '')
-    return ''.join(c for c in s if 'So' not in unicodedata.category(c))
+    """Strip newlines and emoji/symbol characters from a string."""
+    return _RE_STRIP.sub('', (s or '').replace('\n', ' ')).strip()
 
 
 def add_item(url, name, image, infoLabels=None, IsPlayable=False, folder=False, icon=None):
@@ -236,8 +250,12 @@ def live():
                  icon=pic, folder=True)
     cursor = (jsdata.get('pagination') or {}).get('next_cursor')
     if cursor:
-        sep      = '&' if '?' in url else '?'
-        next_url = url.split('&cursor=')[0] + sep + 'cursor=' + quote_plus(cursor)
+        parsed   = urlparse(url)
+        pdict    = parse_qs(parsed.query, keep_blank_values=True)
+        pdict.pop('cursor', None)
+        flat     = {k: v[0] for k, v in pdict.items()}
+        flat['cursor'] = cursor
+        next_url = parsed._replace(query=urlencode(flat)).geturl()
         add_item(plugin.url_for(live, url=next_url),
                  str(language(30020)), NEXT_PAGE_IMG, folder=True)
     _end_dir()
@@ -273,10 +291,9 @@ def list_channel(slug):
     _end_dir()
 
 
-@plugin.route('/vods')
-def list_vods():
+@plugin.route('/vods/<slug>')
+def list_vods(slug):
     """List a channel's previous livestreams (VODs) via Worker proxy."""
-    slug = plugin.args.get('slug', '')
     data = (_api_get(URL_PROXY_CHANNEL.format(slug=quote(slug, safe='')))
             .get('previous_livestreams') or [])
     for x in data:
@@ -362,7 +379,6 @@ def _setup_inputstream(play_item, is_helper, hea):
         play_item.setProperty('inputstream.adaptive.stream_selection_type', 'ask-quality')
     play_item.setProperty('inputstream.adaptive.manifest_type', 'hls')
     play_item.setMimeType('application/vnd.apple.mpegurl')
-    play_item.setProperty('inputstream.adaptive.manifest_update_parameter', 'full')
     play_item.setProperty('inputstream.adaptive.manifest_headers', hea)
 
 
@@ -421,7 +437,6 @@ def settings():
 if __name__ == '__main__':
     try:
         plugin.run()
-    except Exception as exc:
-        import traceback
+    except Exception:
         xbmc.log('KICK: unhandled exception: ' + traceback.format_exc(), xbmc.LOGERROR)
         raise
