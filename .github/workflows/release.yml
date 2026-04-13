@@ -1,0 +1,59 @@
+name: Release & Kodi Repository
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+  pages: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Read addon version
+        id: addon
+        run: |
+          VERSION=$(python3 -c "
+          import xml.etree.ElementTree as ET
+          print(ET.parse('addon.xml').getroot().get('version'))
+          ")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "zipname=plugin.video.kick-${VERSION}.zip" >> "$GITHUB_OUTPUT"
+
+      - name: Build addon zip
+        run: |
+          cd ..
+          zip -r "/tmp/${{ steps.addon.outputs.zipname }}" plugin.video.kick \
+            --exclude "*.git*" \
+            --exclude "*__pycache__*" \
+            --exclude "*.pyc" \
+            --exclude "*.DS_Store" \
+            --exclude "*/repo_output/*"
+          mv "/tmp/${{ steps.addon.outputs.zipname }}" "${{ github.workspace }}/"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "KICK.com v${{ steps.addon.outputs.version }}"
+          body_path: changelog.txt
+          files: ${{ steps.addon.outputs.zipname }}
+
+      - name: Build Kodi repository
+        run: python3 .github/scripts/build_repo.py "${{ steps.addon.outputs.version }}"
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./repo_output
+          keep_files: true
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
+          commit_message: "repo: plugin.video.kick v${{ steps.addon.outputs.version }}"
