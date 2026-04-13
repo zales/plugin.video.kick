@@ -14,7 +14,7 @@ export default {
     // --- Serve file directly ---
     if (key && !key.endsWith('/')) {
       const rangeHeader = request.headers.get('Range');
-      const obj = await env.BUCKET.get(key, rangeHeader ? { range: request } : undefined);
+      const obj = await env.BUCKET.get(key, rangeHeader ? { range: request.headers } : undefined);
       if (!obj) return new Response('Not Found', { status: 404 });
       const headers = new Headers();
       const ext = key.split('.').pop().toLowerCase();
