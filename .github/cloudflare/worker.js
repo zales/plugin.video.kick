@@ -13,7 +13,8 @@ export default {
 
     // --- Serve file directly ---
     if (key && !key.endsWith('/')) {
-      const obj = await env.BUCKET.get(key);
+      const rangeHeader = request.headers.get('Range');
+      const obj = await env.BUCKET.get(key, rangeHeader ? { range: request } : undefined);
       if (!obj) return new Response('Not Found', { status: 404 });
       const headers = new Headers();
       const ext = key.split('.').pop().toLowerCase();
@@ -27,6 +28,12 @@ export default {
       };
       headers.set('Content-Type', mimeTypes[ext] || obj.httpMetadata?.contentType || 'application/octet-stream');
       headers.set('Cache-Control', 'public, max-age=300');
+      headers.set('Accept-Ranges', 'bytes');
+      if (obj.range) {
+        const { offset, length } = obj.range;
+        headers.set('Content-Range', `bytes ${offset}-${offset + length - 1}/${obj.size}`);
+        return new Response(obj.body, { status: 206, headers });
+      }
       return new Response(obj.body, { headers });
     }
 
