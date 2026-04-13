@@ -195,3 +195,7 @@ msgstr "Logowanie anulowane lub przekroczono limit czasu"
 msgctxt "#30044"
 msgid "Login with Google"
 msgstr "Zaloguj przez Google"
+
+msgctxt "#30045"
+msgid "Email / Password"
+msgstr "E-mail / Hasło"

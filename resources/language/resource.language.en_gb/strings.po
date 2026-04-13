@@ -194,3 +194,7 @@ msgstr ""
 msgctxt "#30044"
 msgid "Login with Google"
 msgstr ""
+
+msgctxt "#30045"
+msgid "Email / Password"
+msgstr ""

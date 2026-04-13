@@ -195,3 +195,7 @@ msgstr "Přihlášení zrušeno nebo vypršelo"
 msgctxt "#30044"
 msgid "Login with Google"
 msgstr "Přihlásit přes Google"
+
+msgctxt "#30045"
+msgid "Email / Password"
+msgstr "E-mail / Heslo"

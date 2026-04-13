@@ -11,6 +11,7 @@ Flow:
   6. Addon picks up the token and stores it
 """
 import json
+import socket
 import threading
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import parse_qs, urlparse
@@ -27,10 +28,22 @@ def start(port=27015):
     """Start server in a daemon thread. Returns the port number."""
     global _server
     reset()
-    _server = HTTPServer(('127.0.0.1', port), _Handler)
+    _server = HTTPServer(('0.0.0.0', port), _Handler)
     t = threading.Thread(target=_server.serve_forever, daemon=True)
     t.start()
     return port
+
+
+def get_local_ip():
+    """Best-effort: return LAN IP of this machine."""
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(('8.8.8.8', 80))
+        ip = s.getsockname()[0]
+        s.close()
+        return ip
+    except Exception:
+        return '127.0.0.1'
 
 
 def stop():
@@ -78,7 +91,8 @@ class _Handler(BaseHTTPRequestHandler):
 
         # Default: instructions page
         port = self.server.server_address[1]
-        self._respond(200, 'text/html', _instructions_page(port))
+        lan_ip = get_local_ip()
+        self._respond(200, 'text/html', _instructions_page(port, lan_ip))
 
     # ------------------------------------------------------------------
     # POST /token  → receive token as JSON body (fetch() from bookmarklet)
@@ -160,7 +174,8 @@ def _extract_token(data):
 # HTML pages
 # ---------------------------------------------------------------------------
 
-def _instructions_page(port):
+def _instructions_page(port, lan_ip='127.0.0.1'):
+    local_url = 'http://{}:{}'.format(lan_ip, port)
     bookmarklet = (
         "javascript:(function(){{"
         "var d={{}};"
@@ -201,6 +216,8 @@ def _instructions_page(port):
 </head>
 <body>
 <h2>KICK.com — Google Login for Kodi</h2>
+<p>Open this page on any device in your network:<br>
+<a href="{local_url}" style="color:#53fc18">{local_url}</a></p>
 <ol>
   <li>Drag this button to your <b>bookmarks bar</b>:&nbsp;
       <a class="bm" href="{bookmarklet}">Get Kick Token</a></li>
@@ -210,11 +227,11 @@ def _instructions_page(port):
   <li>A popup will say <em>"Kodi: OK"</em> — return to Kodi, you are logged in!</li>
 </ol>
 <p style="color:#888;font-size:.85rem">
-  This page is served locally by Kodi on <code>localhost:{port}</code>.
+  This page is served locally by Kodi on <code>{local_url}</code>.
   No data leaves your machine.
 </p>
 </body>
-</html>""".format(bookmarklet=bookmarklet, port=port)
+</html>""".format(bookmarklet=bookmarklet, port=port, local_url=local_url)
 
 
 _SUCCESS_PAGE = """<!DOCTYPE html>

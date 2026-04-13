@@ -225,8 +225,7 @@ def home():
         add_item(plugin.url_for(list_followed),
                  str(language(30002)), ICON, folder=True)
     else:
-        add_item(plugin.url_for(login), str(language(30001)), ICON)
-        add_item(plugin.url_for(google_login), str(language(30044)), ICON)
+        add_item(plugin.url_for(login_menu), str(language(30001)), ICON)
     add_item(plugin.url_for(live, url=URL_LIVESTREAMS.format(lang=lang_val)),
              str(language(30003)), ICON, folder=True)
     add_item(plugin.url_for(list_categories), str(language(30004)), ICON, folder=True)
@@ -434,6 +433,17 @@ def _setup_inputstream(play_item, is_helper, hea):
     play_item.setProperty('inputstream.adaptive.manifest_headers', hea)
 
 
+@plugin.route('/login_menu')
+def login_menu():
+    """Show a dialog to choose login method: email/password or Google."""
+    methods = [str(language(30045)), str(language(30044))]
+    sel = xbmcgui.Dialog().select(str(language(30001)), methods)
+    if sel == 0:
+        login()
+    elif sel == 1:
+        google_login()
+
+
 @plugin.route('/login')
 def login():
     """Authenticate with kick.com using stored credentials; handles 2FA if required."""
@@ -487,7 +497,8 @@ def google_login():
     from resources.lib import auth_server
 
     port = auth_server.start()
-    local_url = 'http://localhost:{}'.format(port)
+    lan_ip = auth_server.get_local_ip()
+    local_url = 'http://{}:{}'.format(lan_ip, port)
 
     # Try to open the browser automatically (Kodi 20+)
     try:
