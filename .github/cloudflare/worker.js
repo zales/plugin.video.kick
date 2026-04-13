@@ -144,6 +144,57 @@ export default {
       });
     }
 
+    // GET /app-token — returns cached client_credentials Bearer token for Kick public API
+    if (path === '/app-token') {
+      let appToken = await env.AUTH_RELAY.get('app_token');
+      if (!appToken) {
+        const resp = await fetch(KICK_TOKEN_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({
+            grant_type:    'client_credentials',
+            client_id:     KICK_CLIENT_ID,
+            client_secret: env.KICK_CLIENT_SECRET,
+          }).toString(),
+        });
+        const data = await resp.json();
+        appToken = data.access_token;
+        if (!appToken)
+          return new Response(JSON.stringify({ error: 'token_fetch_failed' }), {
+            status: 500, headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
+          });
+        const ttl = Math.min(Math.max(120, (data.expires_in || 3600) - 120), 86400);
+        await env.AUTH_RELAY.put('app_token', appToken, { expirationTtl: ttl });
+      }
+      return new Response(JSON.stringify({ token: appToken }), {
+        headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
+      });
+    }
+
+    // GET /proxy/kick/* — proxy kick.com internal API with browser-like headers
+    const proxyMatch = path.match(/^\/proxy\/kick(\/.+)$/);
+    if (proxyMatch) {
+      const kickPath = proxyMatch[1];
+      // Only allow safe read-only API paths
+      if (!/^\/(api\/v1|api\/v2|stream)\//.test(kickPath))
+        return new Response('Forbidden', { status: 403, headers: CORS_HEADERS });
+      const targetUrl = 'https://kick.com' + kickPath + (url.search || '');
+      const upstreamResp = await fetch(targetUrl, {
+        headers: {
+          'Accept':          'application/json',
+          'Accept-Language': 'en-US,en;q=0.9',
+          'User-Agent':      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+          'Referer':         'https://kick.com/',
+          'Origin':          'https://kick.com',
+        },
+      });
+      const body = await upstreamResp.text();
+      return new Response(body, {
+        status: upstreamResp.status,
+        headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
+      });
+    }
+
     // R2 repository browser
     const key = path.replace(/^\//, '');
 

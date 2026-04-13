@@ -23,9 +23,16 @@ API_BASE = 'https://kick.com'
 API_V1   = API_BASE + '/api/v1'
 API_V2   = API_BASE + '/api/v2'
 
+# Public developer API (stable, needs Bearer token from client_credentials)
+API_PUB    = 'https://api.kick.com/public/v1'
+API_PUB_V2 = 'https://api.kick.com/public/v2'
+
+# Cloudflare Worker base URL
+WORKER_BASE = 'https://kodi.zales.dev'
+
 URL_HOME           = API_BASE + '/'
-URL_LIVESTREAMS    = API_BASE + '/stream/livestreams/{lang}?page=1'
-URL_SUBCATEGORIES  = API_V1 + '/subcategories?page=1'
+URL_LIVESTREAMS    = API_BASE + '/stream/livestreams/{lang}?page=1'   # legacy, now proxied
+URL_SUBCATEGORIES  = API_V1 + '/subcategories?page=1'                  # legacy, now proxied
 URL_FOLLOWED       = API_V2 + '/channels/followed?cursor=0'
 URL_TOP_CATEGORIES = API_V1 + '/user/categories/top'
 URL_CHANNEL        = API_V1 + '/channels/{slug}'
@@ -37,6 +44,18 @@ URL_VIDEO          = API_V1 + '/video/{uuid}'
 URL_SEARCH         = API_BASE + '/api/search?searched_word={query}'
 URL_KICK_TOKEN     = API_BASE + '/kick-token-provider'
 URL_LOGIN          = API_BASE + '/mobile/login'
+
+# Public API endpoints (require Bearer app token)
+URL_PUB_LIVESTREAMS = API_PUB + '/livestreams'
+URL_PUB_CHANNEL     = API_PUB + '/channels'
+URL_PUB_CATEGORIES  = API_PUB + '/categories'
+URL_PUB_V2_CATS     = API_PUB_V2 + '/categories'
+
+# Worker endpoints
+URL_APP_TOKEN     = WORKER_BASE + '/app-token'
+URL_PROXY_STREAM  = WORKER_BASE + '/proxy/kick/api/v2/channels/{slug}/livestream'
+URL_PROXY_CHANNEL = WORKER_BASE + '/proxy/kick/api/v1/channels/{slug}'
+URL_PROXY_CLIPS   = WORKER_BASE + '/proxy/kick/api/v2/channels/{slug}/clips?cursor=0&sort=view&time=all'
 
 # ---------------------------------------------------------------------------
 # Kodi setup
@@ -69,6 +88,38 @@ def _api_get(url):
         return r.json()
     except Exception as exc:
         xbmc.log('KICKCOMMB: GET {} failed: {}'.format(url[:120], exc), xbmc.LOGERROR)
+        return {}
+
+
+_APP_TOKEN = ''
+
+
+def _get_app_token():
+    """Return a cached client_credentials Bearer token from the Worker."""
+    global _APP_TOKEN
+    if _APP_TOKEN:
+        return _APP_TOKEN
+    try:
+        r = sessi.get(URL_APP_TOKEN, timeout=10)
+        r.raise_for_status()
+        _APP_TOKEN = r.json().get('token', '')
+    except Exception as exc:
+        xbmc.log('KICKCOMMB: app-token failed: {}'.format(exc), xbmc.LOGERROR)
+    return _APP_TOKEN
+
+
+def _pub_get(url):
+    """GET a Kick public API URL with Bearer app token; return parsed JSON or {}."""
+    token = _get_app_token()
+    if not token:
+        return {}
+    try:
+        r = sessi.get(url, timeout=15, headers={'Authorization': 'Bearer ' + token})
+        xbmc.log('KICKCOMMB: PUB {} → {}'.format(url[:120], r.status_code), xbmc.LOGINFO)
+        r.raise_for_status()
+        return r.json()
+    except Exception as exc:
+        xbmc.log('KICKCOMMB: PUB {} failed: {}'.format(url[:120], exc), xbmc.LOGERROR)
         return {}
 
 # ---------------------------------------------------------------------------
@@ -222,16 +273,16 @@ def _end_dir():
 # ---------------------------------------------------------------------------
 @plugin.route('/')
 def home():
-    """Main menu: language picker, login/followed, live, categories, search, settings."""
+    """Main menu: language picker, live, categories, search, settings."""
     lang_val  = addon.getSetting('lang')
     lang_lab  = addon.getSetting('lang_lab')
-    logged_in = addon.getSetting('auth') == '1'
 
     add_item(plugin.url_for(select_language),
              '{}: {}'.format(str(language(30000)), lang_lab), ICON)
-    add_item(plugin.url_for(live, url=URL_LIVESTREAMS.format(lang=lang_val)),
+    add_item(plugin.url_for(live, url=URL_PUB_LIVESTREAMS + '?language={}&limit=25'.format(lang_val)),
              str(language(30003)), ICON, folder=True)
-    add_item(plugin.url_for(list_categories), str(language(30004)), ICON, folder=True)
+    add_item(plugin.url_for(list_subcategories, url=URL_PUB_V2_CATS + '?limit=50'),
+             str(language(30004)), ICON, folder=True)
     add_item(plugin.url_for(search_dialog),     str(language(30005)), ICON)
     add_item(plugin.url_for(settings),   str(language(30041)), ICON)
     _end_dir()
@@ -251,69 +302,56 @@ def select_language():
 
 @plugin.route('/categories')
 def list_categories():
-    """List top-level content categories (Games, IRL, Music, …)."""
-    categories = [
-        ('games',       30007),
-        ('irl',         30008),
-        ('music',       30009),
-        ('gambling',    30010),
-        ('creative',    30011),
-        ('alternative', 30012),
-    ]
-    for slug, str_id in categories:
-        add_item(plugin.url_for(list_subcategories, url='{}|{}'.format(slug, URL_SUBCATEGORIES)),
-                 str(language(str_id)), ICON, folder=True)
-    _end_dir()
+    """Redirect straight to all categories (kept for back-compat)."""
+    xbmc.executebuiltin('Container.Update({})'.format(
+        plugin.url_for(list_subcategories, url=URL_PUB_V2_CATS + '?limit=50')))
 
 
 @plugin.route('/subcategories')
 def list_subcategories():
-    """List subcategories for a given category slug, with pagination."""
-    lang_val = addon.getSetting('lang')
-    mainurl  = plugin.args.get('url', '')
-    tt, murl = mainurl.split('|', 1)
-    jsdata   = _api_get(murl + '&limit=20&category=' + quote_plus(tt))
+    """Browse all categories using the public v2 API."""
+    murl   = plugin.args.get('url', URL_PUB_V2_CATS + '?limit=50')
+    jsdata = _pub_get(murl)
     for x in (jsdata.get('data') or []):
-        title       = x.get('name', '')
-        slug        = x.get('slug', '')
-        description = x.get('description') or ''
-        viewers     = x.get('viewers')
-        label       = title_with_viewers(title, viewers)
-        live_url    = '{}|{}'.format(slug, URL_LIVESTREAMS.format(lang=lang_val))
-        add_item(plugin.url_for(live, url=live_url), label, ICON, folder=True,
-                 infoLabels={'title': label, 'plot': description or label},
-                 contextmenu=make_follow_menu('cat|' + slug, False))
-    if jsdata.get('next_page_url'):
-        add_item(plugin.url_for(list_subcategories, url='{}|{}'.format(tt, jsdata['next_page_url'])),
+        cat_id = x.get('id', '')
+        title  = x.get('name', '')
+        thumb  = x.get('thumbnail') or ICON
+        live_url = URL_PUB_LIVESTREAMS + '?category_id={}&limit=25'.format(cat_id)
+        add_item(plugin.url_for(live, url=live_url), title, thumb, folder=True,
+                 infoLabels={'title': title, 'plot': title})
+    cursor = (jsdata.get('pagination') or {}).get('next_cursor')
+    if cursor:
+        base   = murl.split('?')[0]
+        params = murl.split('?')[1] if '?' in murl else ''
+        pdict  = dict(p.split('=', 1) for p in params.split('&') if '=' in p)
+        pdict.pop('cursor', None)
+        next_url = base + '?' + '&'.join('{}={}'.format(k, v) for k, v in pdict.items()) + '&cursor=' + quote_plus(cursor)
+        add_item(plugin.url_for(list_subcategories, url=next_url),
                  str(language(30020)), NEXT_PAGE_IMG, folder=True)
     _end_dir()
 
 
 @plugin.route('/live')
 def live():
-    """List currently live streams, optionally filtered by subcategory slug."""
-    urlmain = plugin.args.get('url', '')
-    tt = ''
-    if '|' in urlmain:
-        tt, urlmain = urlmain.split('|', 1)
-    url    = urlmain + '&limit=25&subcategory={}&sort={}'.format(
-        quote_plus(tt), 'desc' if tt else 'featured')
-    jsdata = _api_get(url)
+    """List currently live streams (public API)."""
+    url    = plugin.args.get('url', URL_PUB_LIVESTREAMS + '?limit=25')
+    jsdata = _pub_get(url)
     for x in (jsdata.get('data') or []):
-        title_raw = clean_title(x.get('session_title'))
-        viewers   = x.get('viewers')
-        thumbnail = (x.get('thumbnail') or {}).get('src', ICON)
-        slug      = (x.get('channel') or {}).get('slug', '')
-        pic       = (x.get('channel') or {}).get('user', {}).get('profile_pic', ICON)
+        title_raw = clean_title(x.get('stream_title', ''))
+        viewers   = x.get('viewer_count', 0)
+        thumbnail = x.get('thumbnail') or ICON
+        slug      = x.get('slug', '')
+        pic       = x.get('profile_picture') or ICON
         label     = '[B]{}[/B] {} [{}]'.format(slug, title_raw, viewers)
         add_item(plugin.url_for(list_channel, slug=slug), label, thumbnail,
                  infoLabels={'title': label, 'plot': label},
                  contextmenu=make_channel_menu(slug, slug, pic),
                  folder=True)
-    if jsdata.get('next_page_url'):
-        next_raw = jsdata['next_page_url']
-        nturl = '{}|{}'.format(tt, next_raw) if tt else next_raw
-        add_item(plugin.url_for(live, url=nturl),
+    cursor = (jsdata.get('pagination') or {}).get('next_cursor')
+    if cursor:
+        sep      = '&' if '?' in url else '?'
+        next_url = url.split('&cursor=')[0] + sep + 'cursor=' + quote_plus(cursor)
+        add_item(plugin.url_for(live, url=next_url),
                  str(language(30020)), NEXT_PAGE_IMG, folder=True)
     _end_dir()
 
@@ -321,17 +359,17 @@ def live():
 @plugin.route('/channel/<slug>')
 def list_channel(slug):
     """Show channel page: live stream (if any), past VODs, and clips."""
-    jsdata      = _api_get(URL_CHANNEL.format(slug=quote(slug, safe='')))
+    jsdata = _pub_get(URL_PUB_CHANNEL + '?slug=' + quote(slug, safe=''))
+    ch     = (jsdata.get('data') or [{}])[0]
 
-    user       = jsdata.get('user') or {}
-    pic        = user.get('profile_pic', ICON)
-    username   = user.get('username', slug)
+    pic         = ICON
+    username    = ch.get('slug', slug)
     contextmenu = make_channel_menu(slug, username, pic)
-    livestream = jsdata.get('livestream')
+    stream      = ch.get('stream') or {}
 
-    if livestream:
-        thumbnail = (livestream.get('thumbnail') or {}).get('url', ICON)
-        title     = clean_title(livestream.get('session_title')) + LIVE_BADGE
+    if stream.get('is_live'):
+        thumbnail = stream.get('thumbnail') or ICON
+        title     = clean_title(ch.get('stream_title', '')) + LIVE_BADGE
         add_item(plugin.url_for(play_video, url=slug), title, thumbnail,
                  infoLabels={'title': title, 'plot': title},
                  contextmenu=contextmenu, IsPlayable=True)
@@ -351,9 +389,9 @@ def list_channel(slug):
 
 @plugin.route('/vods')
 def list_vods():
-    """List a channel's previous livestreams (VODs) fetched by channel slug."""
+    """List a channel's previous livestreams (VODs) via Worker proxy."""
     slug = plugin.args.get('slug', '')
-    data = (_api_get(URL_CHANNEL.format(slug=quote(slug, safe='')))
+    data = (_api_get(URL_PROXY_CHANNEL.format(slug=quote(slug, safe='')))
             .get('previous_livestreams') or [])
     for x in data:
         title_raw  = clean_title(x.get('session_title'))
@@ -373,8 +411,8 @@ def list_vods():
 
 @plugin.route('/clips/<slug>')
 def list_clips(slug):
-    """List clips for the given channel slug, sorted by views (all time)."""
-    jsdata = _api_get(URL_CLIPS.format(slug=quote(slug, safe='')))
+    """List clips for the given channel slug via Worker proxy."""
+    jsdata = _api_get(URL_PROXY_CLIPS.format(slug=quote(slug, safe='')))
     for x in (jsdata.get('clips') or []):
         title     = x.get('title', '')
         thumbnail = x.get('thumbnail_url') or ICON
@@ -414,12 +452,13 @@ def play_video():
 
 
 def _resolve_stream(slug):
-    """Resolve a slug/URL to a playable stream URL, or None."""
-    if slug.startswith('http') and not (slug.endswith('.mp4') or slug.endswith('.m3u8')):
-        return _api_get(slug).get('source')
+    """Resolve a slug/URL to a playable HLS stream URL, or None."""
     if slug.endswith('.mp4') or slug.endswith('.m3u8'):
         return slug
-    return (_api_get(URL_LIVESTREAM.format(slug=quote(slug, safe='')))
+    if slug.startswith('http') and not slug.endswith('.mp4') and not slug.endswith('.m3u8'):
+        return _api_get(slug).get('source')
+    # Slug: proxy the internal kick.com livestream endpoint via Worker
+    return (_api_get(URL_PROXY_STREAM.format(slug=quote(slug, safe='')))
             .get('data') or {}).get('playback_url')
 
 
@@ -696,7 +735,7 @@ def list_followed():
             title   = x.get('name', '')
             viewers = x.get('viewers')
             label   = title_with_viewers(title, viewers)
-            live_url = '{}|{}'.format(slug, URL_LIVESTREAMS.format(lang=lang_val))
+            live_url = URL_PUB_LIVESTREAMS + '?category_id={}&limit=25'.format(slug)
             add_item(plugin.url_for(live, url=live_url), label, ICON,
                      infoLabels={'title': label, 'plot': label},
                      contextmenu=make_follow_menu('cat|' + slug, True),
@@ -708,34 +747,29 @@ def list_followed():
 
 @plugin.route('/search')
 def list_search():
-    """Display search results (channels and categories) for the given query."""
-    lang_val = addon.getSetting('lang')
-    query    = plugin.args.get('q', '')
+    """Display search results (categories + exact channel match) for the given query."""
+    query = plugin.args.get('q', '')
 
-    data      = _api_get(URL_SEARCH.format(query=quote_plus(query)))
-    channels  = data.get('channels') or []
-    cats      = data.get('categories') or []
-
+    # Exact channel slug match
+    ch_data  = _pub_get(URL_PUB_CHANNEL + '?slug=' + quote(query, safe=''))
+    channels = ch_data.get('data') or []
     for x in channels:
-        slug     = x.get('slug', '')
-        user     = x.get('user') or {}
-        username = user.get('username', '')
-        pic      = user.get('profilePic') or ICON
-        bio = user.get('bio') or ''
-        bio = clean_title(bio).replace('\n', '[CR]')
-        add_item(plugin.url_for(list_channel, slug=slug), username, pic,
-                 infoLabels={'title': username, 'plot': bio or username},
+        slug  = x.get('slug', '')
+        label = slug
+        add_item(plugin.url_for(list_channel, slug=slug), label, ICON,
+                 infoLabels={'title': label, 'plot': label},
                  folder=True)
 
+    # Category search (deprecated v1 endpoint but still works)
+    cat_data = _pub_get(URL_PUB_CATEGORIES + '?q=' + quote_plus(query))
+    cats     = cat_data.get('data') or []
     for x in cats:
-        title       = x.get('name', '')
-        slug        = x.get('slug', '')
-        description = x.get('description') or ''
-        viewers     = x.get('viewers')
-        label       = title_with_viewers(title, viewers)
-        live_url    = '{}|{}'.format(slug, URL_LIVESTREAMS.format(lang=lang_val))
-        add_item(plugin.url_for(live, url=live_url), label, ICON,
-                 infoLabels={'title': label, 'plot': description or label},
+        cat_id = x.get('id', '')
+        title  = x.get('name', '')
+        thumb  = x.get('thumbnail') or ICON
+        live_url = URL_PUB_LIVESTREAMS + '?category_id={}&limit=25'.format(cat_id)
+        add_item(plugin.url_for(live, url=live_url), title, thumb,
+                 infoLabels={'title': title, 'plot': title},
                  folder=True)
 
     _end_dir()
