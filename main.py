@@ -142,11 +142,16 @@ def clean_title(s):
 
 def add_item(url, name, image, infoLabels=None, IsPlayable=False, folder=False, icon=None):
     """Create a ListItem and add it to the current directory listing."""
-    li = xbmcgui.ListItem(label=name)
+    li  = xbmcgui.ListItem(label=name)
     if IsPlayable:
         li.setProperty('IsPlayable', 'True')
-    li.setInfo(type='video', infoLabels=infoLabels or {'title': name})
     li.setArt({'thumb': image, 'poster': image, 'banner': image, 'icon': icon or image})
+    info = infoLabels or {}
+    tag  = li.getVideoInfoTag()
+    tag.setTitle(info.get('title', name))
+    tag.setPlot(info.get('plot', ''))
+    if 'duration' in info:
+        tag.setDuration(int(info['duration'] or 0))
     xbmcplugin.addDirectoryItem(handle=plugin.handle, url=url, listitem=li, isFolder=folder)
 
 
@@ -187,13 +192,6 @@ def select_language():
     addon.setSetting('lang',     LANGUAGES[sel][0])
     addon.setSetting('lang_lab', LANGUAGES[sel][1])
     xbmc.executebuiltin('Container.Refresh')
-
-
-@plugin.route('/categories')
-def list_categories():
-    """Redirect straight to all categories (kept for back-compat)."""
-    xbmc.executebuiltin('Container.Update({})'.format(
-        plugin.url_for(list_subcategories, url=URL_PUB_V2_CATS + '?limit=50')))
 
 
 @plugin.route('/subcategories')

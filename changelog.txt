@@ -1,3 +1,7 @@
+2.5.6
+- fix: replace deprecated setInfo() with Kodi 19+ getVideoInfoTag() API
+- fix: remove dead /categories back-compat route
+
 2.5.5
 - fix: token cached in Kodi Window property (persists across plugin invocations)
 - fix: LIVE badge uses clean separator instead of whitespace padding
