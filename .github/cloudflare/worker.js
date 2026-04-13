@@ -6,11 +6,9 @@
  *   BUCKET     — R2 bucket "kodi-repo"
  *   AUTH_RELAY — KV namespace for ephemeral auth tokens (TTL 10 min)
  *
- * Secrets (wrangler secret put):
- *   GOOGLE_CLIENT_SECRET  — OAuth 2.0 client secret
+ * No secrets needed — uses Firebase createAuthUri which uses Kick's own registered OAuth client.
  */
 
-const GOOGLE_CLIENT_ID = '788340811798-ocpqf9hngtsqa7krs3mdr8ngojq6h8b8.apps.googleusercontent.com';
 const FIREBASE_API_KEY = 'AIzaSyBt03MQfMaVa2QNnADsIUgT1LBOOx7SET0';
 
 const CORS_HEADERS = {
@@ -19,16 +17,17 @@ const CORS_HEADERS = {
   'Access-Control-Allow-Headers': 'Content-Type',
 };
 
-function connectPage(sessionId, baseUrl) {
-  const params = new URLSearchParams({
-    client_id:     GOOGLE_CLIENT_ID,
-    redirect_uri:  `${baseUrl}/oauth/callback`,
-    response_type: 'code',
-    scope:         'openid email profile',
-    state:         sessionId,
-    prompt:        'select_account',
-  });
-  const googleUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params}`;
+async function getConnectPage(sessionId, baseUrl, env) {
+  const continueUri = `${baseUrl}/oauth/callback?uuid=${sessionId}`;
+  const caResp = await fetch(
+    `https://identitytoolkit.googleapis.com/v1/accounts:createAuthUri?key=${FIREBASE_API_KEY}`,
+    { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ providerId: 'google.com', continueUri }) }
+  );
+  const caData = await caResp.json();
+  if (!caData.authUri) throw new Error('createAuthUri failed: ' + JSON.stringify(caData));
+  await env.AUTH_RELAY.put(`fbsession:${sessionId}`, caData.sessionId, { expirationTtl: 600 });
+  const googleUrl = caData.authUri;
   return `<!DOCTYPE html>
 <html lang="cs"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Kodi KICK.com - Login</title>
@@ -72,41 +71,67 @@ export default {
 
     // GET /connect/:id
     const connectMatch = path.match(/^\/connect\/([a-zA-Z0-9_-]{8,64})$/);
-    if (connectMatch)
-      return new Response(connectPage(connectMatch[1], baseUrl), {
-        headers: { 'Content-Type': 'text/html; charset=utf-8' },
-      });
-
-    // GET /oauth/callback
-    if (path === '/oauth/callback') {
-      const code  = url.searchParams.get('code');
-      const state = url.searchParams.get('state');
-      const error = url.searchParams.get('error');
-      if (error || !code || !state)
-        return errorPage('Login zrusen: ' + (error || 'chybi parametry'));
+    if (connectMatch) {
       try {
-        const gResp = await fetch('https://oauth2.googleapis.com/token', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: new URLSearchParams({
-            code, grant_type: 'authorization_code',
-            client_id: GOOGLE_CLIENT_ID, client_secret: env.GOOGLE_CLIENT_SECRET,
-            redirect_uri: `${baseUrl}/oauth/callback`,
-          }).toString(),
-        });
-        const gTokens = await gResp.json();
-        if (!gTokens.id_token) return errorPage('Google token chyba: ' + JSON.stringify(gTokens));
+        const html = await getConnectPage(connectMatch[1], baseUrl, env);
+        return new Response(html, { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+      } catch (e) {
+        return errorPage('Connect page error: ' + e.message);
+      }
+    }
+
+    // GET /oauth/callback — serves JS fragment-reader page
+    if (path === '/oauth/callback') {
+      const uuid  = url.searchParams.get('uuid');
+      const error = url.searchParams.get('error');
+      if (error) return errorPage('Google login zrusen: ' + error);
+      if (!uuid || !/^[a-zA-Z0-9_-]{8,64}$/.test(uuid))
+        return errorPage('Chybi nebo neplatny UUID parametr');
+      const safeUuid = uuid.replace(/[^a-zA-Z0-9_-]/g, '');
+      return new Response(
+        '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Prihlasovani...</title>' +
+        '<style>body{font-family:sans-serif;text-align:center;padding:60px;background:#0a120a;color:#ddd;}' +
+        'h2{color:#53fc18;font-size:1.6rem;}p{color:#aaa;margin-top:16px;}</style></head>' +
+        '<body><h2>&#9203; Prihlasovani...</h2><p id="msg">Prosim cekejte.</p>' +
+        '<script>(function(){' +
+          'var hash=window.location.hash.substring(1);' +
+          'var p=new URLSearchParams(hash);' +
+          'var idToken=p.get("id_token");' +
+          'if(!idToken){document.getElementById("msg").textContent="Chyba: id_token nenalezen v URL: "+window.location.hash;return;}' +
+          'fetch("/oauth/finalize",{method:"POST",headers:{"Content-Type":"application/json"},' +
+          'body:JSON.stringify({uuid:"' + safeUuid + '",requestUri:window.location.href})})' +
+          '.then(function(r){return r.json();})' +
+          '.then(function(d){' +
+            'if(d.ok){document.querySelector("h2").textContent="\u2713 Prihlaseni uspesne!";' +
+            'document.getElementById("msg").textContent="Vrate se do Kodi - jste prihlaseni.";}' +
+            'else{document.querySelector("h2").style.color="#f55";document.querySelector("h2").textContent="\u2717 Chyba";' +
+            'document.getElementById("msg").textContent=d.error||("status "+d.status);}' +
+          '}).catch(function(e){document.getElementById("msg").textContent="Fetch error: "+e.message;});' +
+        '})();</script></body></html>',
+        { headers: { 'Content-Type': 'text/html; charset=utf-8' } }
+      );
+    }
+
+    // POST /oauth/finalize — exchanges Firebase session+idToken for Kick bearer
+    if (path === '/oauth/finalize' && request.method === 'POST') {
+      try {
+        const body = await request.json();
+        const { uuid, requestUri } = body;
+        if (!uuid || !requestUri || !/^[a-zA-Z0-9_-]{8,64}$/.test(uuid))
+          return new Response(JSON.stringify({ ok: false, error: 'Missing/invalid params' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+
+        const fbSessionId = await env.AUTH_RELAY.get(`fbsession:${uuid}`);
+        if (!fbSessionId)
+          return new Response(JSON.stringify({ ok: false, error: 'Session expired or not found' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
 
         const fbResp = await fetch(
           `https://identitytoolkit.googleapis.com/v1/accounts:signInWithIdp?key=${FIREBASE_API_KEY}`,
           { method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              postBody: `access_token=${gTokens.access_token}&providerId=google.com`,
-              requestUri: baseUrl, returnIdpCredential: true, returnSecureToken: true,
-            }) }
+            body: JSON.stringify({ sessionId: fbSessionId, requestUri, returnIdpCredential: true, returnSecureToken: true }) }
         );
         const fbData = await fbResp.json();
-        if (!fbData.idToken) return errorPage('Firebase chyba: ' + JSON.stringify(fbData));
+        if (!fbData.idToken)
+          return new Response(JSON.stringify({ ok: false, error: 'Firebase: ' + JSON.stringify(fbData) }), { headers: { 'Content-Type': 'application/json' } });
 
         const kickResp = await fetch('https://kick.com/api/v1/google-mobile-login', {
           method: 'POST',
@@ -116,18 +141,14 @@ export default {
         const kickData = await kickResp.json();
         const bearer = kickData.token || kickData.access_token
           || (kickData.data && (kickData.data.token || kickData.data.access_token));
-        if (!bearer) return errorPage('Kick chyba (' + kickResp.status + '): ' + JSON.stringify(kickData));
+        if (!bearer)
+          return new Response(JSON.stringify({ ok: false, error: `Kick (${kickResp.status}): ${JSON.stringify(kickData)}` }), { headers: { 'Content-Type': 'application/json' } });
 
-        await env.AUTH_RELAY.put(`token:${state}`, bearer, { expirationTtl: 600 });
-
-        return new Response(
-          '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Hotovo!</title>' +
-          '<style>body{font-family:sans-serif;text-align:center;padding:60px;background:#0a120a;color:#ddd;}h2{color:#53fc18;font-size:2rem;}p{color:#aaa;margin-top:16px;}</style></head>' +
-          '<body><h2>&#10003; Prihlaseni uspesne!</h2><p>Vrate se do Kodi - jste prihlaseni.</p></body></html>',
-          { headers: { 'Content-Type': 'text/html; charset=utf-8' } }
-        );
+        await env.AUTH_RELAY.put(`token:${uuid}`, bearer, { expirationTtl: 600 });
+        await env.AUTH_RELAY.delete(`fbsession:${uuid}`);
+        return new Response(JSON.stringify({ ok: true }), { headers: { 'Content-Type': 'application/json' } });
       } catch (e) {
-        return errorPage('Neocekavana chyba: ' + e.message);
+        return new Response(JSON.stringify({ ok: false, error: e.message }), { headers: { 'Content-Type': 'application/json' } });
       }
     }
 
