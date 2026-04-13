@@ -22,7 +22,7 @@
         <assets>
             <icon>icon.png</icon>
         </assets>
-        <news>v2.4.0 - migrated to public Kick API + Cloudflare Worker proxy, fixes live channels and search</news>
+        <news>v2.4.1 - code cleanup, removed dead auth code, fix VOD playback via proxy</news>
     </extension>
 </addon>
 
