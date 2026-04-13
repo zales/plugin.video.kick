@@ -101,7 +101,7 @@ export default {
           `https://identitytoolkit.googleapis.com/v1/accounts:signInWithIdp?key=${FIREBASE_API_KEY}`,
           { method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              postBody: `id_token=${gTokens.id_token}&providerId=google.com`,
+              postBody: `access_token=${gTokens.access_token}&providerId=google.com`,
               requestUri: baseUrl, returnIdpCredential: true, returnSecureToken: true,
             }) }
         );
