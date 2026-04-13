@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addons>
+    <addon id="plugin.video.kick" name="KICK.com" version="1.7" provider-name="">
+        <requires>
+            <import addon="xbmc.python" version="3.0.0" />
+            <import addon="script.module.requests" version="2.31.0" />
+            <import addon="script.module.inputstreamhelper" version="0.8.5" optional="true" />
+        </requires>
+        <extension point="xbmc.python.pluginsource" library="main.py">
+            <provides>video</provides>
+        </extension>
+        <extension point="xbmc.addon.metadata">
+            <summary lang="en">Watch live streams, VODs and clips from kick.com</summary>
+            <description lang="en">Browse live channels, categories, VODs and clips from kick.com. Supports login, following channels and categories, search, and HLS playback via InputStream Adaptive.</description>
+            <disclaimer lang="en">This addon is not affiliated with kick.com.</disclaimer>
+            <language>en</language>
+            <platform>all</platform>
+            <license>GNU GENERAL PUBLIC LICENSE Version 2, June 1991</license>
+            <website>https://github.com/zales/plugin.video.kick</website>
+            <source>https://github.com/zales/plugin.video.kick</source>
+            <assets>
+                <icon>icon.png</icon>
+                <fanart>fanart.jpg</fanart>
+            </assets>
+            <news>v1.7 - expanded language list to 41 languages; fixed BBCode tags, auth edge cases, URL encoding, cloudscraper UA; v1.6 - bundled cloudscraper</news>
+        </extension>
+    </addon>
+</addons>
