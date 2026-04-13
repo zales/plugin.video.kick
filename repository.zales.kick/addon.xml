@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="repository.zales.kick" name="KICK.com Repository" version="1.0.0" provider-name="zales">
+    <requires>
+        <import addon="xbmc.addon" version="12.0.0"/>
+    </requires>
+
+    <extension point="xbmc.addon.repository" name="KICK.com Repository">
+        <info compressed="false">https://zales.github.io/plugin.video.kick/addons.xml</info>
+        <checksum>https://zales.github.io/plugin.video.kick/addons.xml.md5</checksum>
+        <datadir zip="true">https://zales.github.io/plugin.video.kick</datadir>
+    </extension>
+
+    <extension point="xbmc.addon.metadata">
+        <summary lang="en">KICK.com Kodi Repository</summary>
+        <description lang="en">Repository for the KICK.com Kodi add-on by zales.</description>
+        <disclaimer lang="en">This repository is not affiliated with kick.com.</disclaimer>
+        <platform>all</platform>
+        <license>GNU GENERAL PUBLIC LICENSE Version 2, June 1991</license>
+        <website>https://github.com/zales/plugin.video.kick</website>
+    </extension>
+</addon>
