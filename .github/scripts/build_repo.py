@@ -92,20 +92,25 @@ html = f"""<!DOCTYPE html>
 <h1>KICK.com Kodi Add-on</h1>
 <p>Latest: <strong>v{version}</strong> &nbsp;&bull;&nbsp; <a href="https://github.com/zales/{ADDON_ID}/releases">All releases</a></p>
 
-<h2>1 — Install the repository (one-time)</h2>
+<h2>1 — Add repository source (one-time)</h2>
 <ol>
-  <li>Download: <a href="{repo_short_url}">repo.zip</a> &nbsp;<code>{repo_short_url}</code></li>
-  <li>Kodi &rarr; <b>Add-ons &rarr; Install from zip file</b> &rarr; select the downloaded zip</li>
+  <li>Kodi &rarr; <b>Settings &rarr; File Manager &rarr; Add source</b></li>
+  <li>URL: <code>{repo_url}</code> &nbsp; Name: <em>KICK repo</em></li>
 </ol>
 
-<h2>2a — Install via repository (recommended — auto-updates)</h2>
+<h2>2 — Install the repository</h2>
+<ol>
+  <li>Kodi &rarr; <b>Add-ons &rarr; Install from zip file &rarr; KICK repo</b></li>
+  <li>Select <b>repository.zales.kick</b> &rarr; <b>repository.zales.kick-1.0.0.zip</b></li>
+</ol>
+
+<h2>3 — Install the add-on (auto-updates)</h2>
 <ol>
   <li>Kodi &rarr; <b>Add-ons &rarr; Install from repository &rarr; KICK.com Repository</b></li>
   <li>Select <b>Video add-ons &rarr; KICK.com</b> &rarr; Install</li>
-  <li>The add-on will update automatically from now on</li>
 </ol>
 
-<h2>2b — Install plugin directly (no auto-updates)</h2>
+<h2>Alternative — direct install (no auto-updates)</h2>
 <ol>
   <li>Download: <a href="{plugin_zip_url}">plugin.zip</a> &nbsp;<code>{plugin_zip_url}</code></li>
   <li>Kodi &rarr; <b>Add-ons &rarr; Install from zip file</b> &rarr; select the downloaded zip</li>
