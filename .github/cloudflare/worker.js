@@ -37,6 +37,17 @@ export default {
       return new Response(obj.body, { headers });
     }
 
+    // --- Serve index.html for root ---
+    if (!key) {
+      const obj = await env.BUCKET.get('index.html');
+      if (obj) {
+        const headers = new Headers();
+        headers.set('Content-Type', 'text/html; charset=utf-8');
+        headers.set('Cache-Control', 'public, max-age=300');
+        return new Response(obj.body, { headers });
+      }
+    }
+
     // --- Directory listing ---
     const prefix  = key;  // '' for root, 'subdir/' for subdirs
     const listed  = await env.BUCKET.list({ prefix, delimiter: '/' });
