@@ -1,3 +1,15 @@
+2.0.0
+- new Kick.com logo icon
+- Kodi 21 repository support with <dir> schema
+- HTTP Range request support for proper zip install
+- expanded language list from 16 to 41 (matches current kick.com UI)
+- fixed BBCode tag ordering in LIVE badge
+- fixed apply_auth() returning True on JSON parse failure
+- fixed _fetch_xsrf() missing timeout and error handling
+- fixed category URL encoding with quote_plus
+- fixed cloudscraper UA being overwritten
+- removed unused Host header and urlparse import
+
 1.7
 - expanded language list from 16 to 41 (matches current kick.com UI)
 - fixed BBCode tag ordering in LIVE badge
