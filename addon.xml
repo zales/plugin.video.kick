@@ -21,7 +21,6 @@
         <source>https://github.com/zales/plugin.video.kick</source>
         <assets>
             <icon>icon.png</icon>
-            <fanart>fanart.jpg</fanart>
         </assets>
         <news>v1.7 - expanded language list to 41 languages; fixed BBCode tags, auth edge cases, URL encoding, cloudscraper UA; v1.6 - bundled cloudscraper</news>
     </extension>
