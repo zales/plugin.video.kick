@@ -63,6 +63,25 @@ def reset():
     _token_received = None
 
 
+def get_qr_image(url):
+    """Download a QR code PNG for *url* from a free API.
+
+    Returns the path to a temporary file.  Caller is responsible for deleting it.
+    Raises on network error so the caller can fall back gracefully.
+    """
+    import tempfile
+    import urllib.request
+    import urllib.parse
+    api = (
+        'https://api.qrserver.com/v1/create-qr-code/'
+        '?size=400x400&margin=2&data={}'
+    ).format(urllib.parse.quote(url, safe=''))
+    tmp = tempfile.NamedTemporaryFile(suffix='.png', delete=False)
+    tmp.close()
+    urllib.request.urlretrieve(api, tmp.name)
+    return tmp.name
+
+
 # ---------------------------------------------------------------------------
 # HTTP handler
 # ---------------------------------------------------------------------------

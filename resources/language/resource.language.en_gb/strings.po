@@ -198,3 +198,7 @@ msgstr ""
 msgctxt "#30045"
 msgid "Email / Password"
 msgstr ""
+
+msgctxt "#30046"
+msgid "Open this URL on your phone or PC:"
+msgstr ""

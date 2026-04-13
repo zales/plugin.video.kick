@@ -491,44 +491,124 @@ def login():
     xbmc.executebuiltin('Container.Refresh')
 
 
+# ---------------------------------------------------------------------------
+# QR-code login dialog
+# ---------------------------------------------------------------------------
+
+class _QRLoginDialog(xbmcgui.WindowDialog):
+    """Full-screen overlay showing a QR code + URL.  Polls for the auth token."""
+
+    ACTION_BACK = 92
+    ACTION_NAV_BACK = 9
+    ACTION_ESCAPE = 10
+
+    def __init__(self, img_path, url):
+        super().__init__()
+        self.cancelled = False
+        self._img_path = img_path
+        self._url = url
+        self._auth_mod = None
+        self._build_ui()
+
+    def _build_ui(self):
+        sw = self.getWidth()
+        sh = self.getHeight()
+        qr_size = min(sw, sh, 500) // 2
+        x = (sw - qr_size) // 2
+        y = (sh - qr_size) // 2 - 50
+
+        qr_ctrl = xbmcgui.ControlImage(x, y, qr_size, qr_size, self._img_path)
+        self.addControl(qr_ctrl)
+
+        url_lbl = xbmcgui.ControlLabel(
+            0, y + qr_size + 16, sw, 46,
+            '[B]{}[/B]'.format(self._url),
+            textColor='0xFFFFFFFF',
+            alignment=0x00000002,  # XBFONT_CENTER_X
+        )
+        self.addControl(url_lbl)
+
+        hint = xbmcgui.ControlLabel(
+            0, y + qr_size + 62, sw, 34,
+            'Naskenujte QR telefonem  —  Back = zrusit',
+            textColor='0xFF888888',
+            alignment=0x00000002,
+        )
+        self.addControl(hint)
+
+    def start_polling(self, auth_mod):
+        import threading
+        self._auth_mod = auth_mod
+        threading.Thread(target=self._poll, daemon=True).start()
+
+    def _poll(self):
+        for _ in range(300):
+            xbmc.sleep(1000)
+            if self._auth_mod and self._auth_mod.get_token():
+                self.close()
+                return
+        self.close()  # timeout
+
+    def onAction(self, action):
+        if action.getId() in (self.ACTION_BACK, self.ACTION_NAV_BACK, self.ACTION_ESCAPE):
+            self.cancelled = True
+            self.close()
+
+
 @plugin.route('/google_login')
 def google_login():
     """Open a local browser page that guides the user through Google OAuth on kick.com."""
+    import os
     from resources.lib import auth_server
 
     port = auth_server.start()
     lan_ip = auth_server.get_local_ip()
     local_url = 'http://{}:{}'.format(lan_ip, port)
 
-    # Try to open the browser automatically (Kodi 20+)
+    # Try to open browser automatically (Kodi 20+)
     try:
         xbmc.openBrowserWindow(local_url)
     except AttributeError:
-        pass  # Kodi < 20 — user will open it manually
+        pass
 
-    progress = xbmcgui.DialogProgress()
-    progress.create(
-        'KICK.com — Google Login',
-        '{}\n\n{}'.format(str(language(30042)), local_url),
-    )
+    # Fetch QR code image (needs internet)
+    qr_path = None
+    try:
+        qr_path = auth_server.get_qr_image(local_url)
+    except Exception:
+        pass
 
-    timeout_secs = 300  # 5 minutes
-    elapsed = 0
     token = None
-    while elapsed < timeout_secs:
-        if progress.iscanceled():
-            break
-        token = auth_server.get_token()
-        if token:
-            break
-        xbmc.sleep(1000)
-        elapsed += 1
-        progress.update(
-            int(elapsed / timeout_secs * 100),
-            '{}\n\n{}'.format(str(language(30042)), local_url),
-        )
 
-    progress.close()
+    if qr_path:
+        dlg = _QRLoginDialog(qr_path, local_url)
+        dlg.start_polling(auth_server)
+        dlg.doModal()
+        token = auth_server.get_token()
+        del dlg
+        try:
+            os.remove(qr_path)
+        except Exception:
+            pass
+    else:
+        # Fallback: text progress dialog (no QR image available)
+        progress = xbmcgui.DialogProgress()
+        msg = '{}\n[B]{}[/B]\n\n{}'.format(
+            str(language(30042)), local_url, str(language(30046)))
+        progress.create('KICK.com — Google Login', msg)
+        timeout_secs = 300
+        elapsed = 0
+        while elapsed < timeout_secs:
+            if progress.iscanceled():
+                break
+            token = auth_server.get_token()
+            if token:
+                break
+            xbmc.sleep(1000)
+            elapsed += 1
+            progress.update(int(elapsed / timeout_secs * 100), msg)
+        progress.close()
+
     auth_server.stop()
 
     if not token:

@@ -199,3 +199,7 @@ msgstr "Zaloguj przez Google"
 msgctxt "#30045"
 msgid "Email / Password"
 msgstr "E-mail / Hasło"
+
+msgctxt "#30046"
+msgid "Open this URL on your phone or PC:"
+msgstr "Otwórz ten URL na telefonie lub PC:"
