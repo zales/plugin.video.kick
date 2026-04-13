@@ -20,7 +20,7 @@ class Plugin:
         parsed = urlparse(sys.argv[0])
         self.base_url = '{}://{}'.format(parsed.scheme, parsed.netloc)
         self.handle = int(sys.argv[1])
-        self._path = parsed.path or '/'
+        self._path = parsed.path.rstrip('/') or '/'
         # Flatten single-value lists so args['key'] == 'value' (not ['value'])
         self.args = {k: (v[0] if len(v) == 1 else v)
                      for k, v in parse_qs(sys.argv[2][1:]).items()}
