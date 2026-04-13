@@ -60,11 +60,15 @@ md5 = hashlib.md5(addons_xml.encode('utf-8')).hexdigest()
 with open(os.path.join(OUT_DIR, 'addons.xml.md5'), 'w') as f:
     f.write(md5)
 
+# --- stable shortlink: repo.zip always points to latest repository addon ---
+shutil.copy(repo_zip_path, os.path.join(OUT_DIR, 'repo.zip'))
+
 # --- static files ---
 open(os.path.join(OUT_DIR, '.nojekyll'), 'w').close()
 
-repo_url    = f'https://zales.github.io/{ADDON_ID}'
-repo_zip_url = f'{repo_url}/{REPO_ID}/{repo_zip}'
+repo_url       = 'https://kodi.zales.dev'
+repo_zip_url   = f'{repo_url}/{REPO_ID}/{repo_zip}'
+repo_short_url = f'{repo_url}/repo.zip'
 html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -86,7 +90,7 @@ html = f"""<!DOCTYPE html>
 
 <h2>1 — Install the repository (one-time)</h2>
 <ol>
-  <li>Download: <a href="{repo_zip_url}">{repo_zip}</a></li>
+  <li>Download: <a href="{repo_short_url}">repo.zip</a> &nbsp;<code>{repo_short_url}</code></li>
   <li>Kodi &rarr; <b>Add-ons &rarr; Install from zip file</b> &rarr; select the downloaded zip</li>
 </ol>
 

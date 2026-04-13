@@ -48,12 +48,14 @@ jobs:
       - name: Build Kodi repository
         run: python3 .github/scripts/build_repo.py "${{ steps.addon.outputs.version }}"
 
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./repo_output
-          keep_files: true
-          user_name: 'github-actions[bot]'
-          user_email: 'github-actions[bot]@users.noreply.github.com'
-          commit_message: "repo: plugin.video.kick v${{ steps.addon.outputs.version }}"
+      - name: Upload to Cloudflare R2
+        env:
+          AWS_ACCESS_KEY_ID:     ${{ secrets.CF_R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.CF_R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION:    auto
+        run: |
+          pip install awscli --quiet
+          aws s3 sync repo_output/ s3://${{ secrets.CF_R2_BUCKET }}/ \
+            --endpoint-url https://${{ secrets.CF_ACCOUNT_ID }}.r2.cloudflarestorage.com \
+            --delete \
+            --no-progress

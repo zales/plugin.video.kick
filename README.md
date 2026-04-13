@@ -29,10 +29,11 @@ Watch live streams, browse VODs and clips, follow your favourite channels, all f
 
 ### Via Kodi repository (recommended)
 
-1. Download **[repository.zales.kick-1.0.0.zip](https://zales.github.io/plugin.video.kick/repository.zales.kick/repository.zales.kick-1.0.0.zip)**
-2. Kodi → **Add-ons → Install from zip file** → select the downloaded zip
-3. Kodi → **Add-ons → Install from repository → KICK.com Repository**
-4. Select **Video add-ons → KICK.com → Install**
+1. Kodi → **Settings → File Manager → Add source**
+   - URL: `https://kodi.zales.dev`
+   - Name: `KICK repo`
+2. Kodi → **Add-ons → Install from zip file → KICK repo** → `repository.zales.kick/` → `repository.zales.kick-1.0.0.zip`
+3. Kodi → **Add-ons → Install from repository → KICK.com Repository → Video add-ons → KICK.com → Install**
 
 The add-on will update automatically with new releases.
 
