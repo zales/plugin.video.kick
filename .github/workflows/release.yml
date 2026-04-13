@@ -23,15 +23,8 @@ jobs:
           VERSION="${GITHUB_REF_NAME#v}"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "zipname=plugin.video.kick-${VERSION}.zip" >> "$GITHUB_OUTPUT"
-          python3 -c "
-import xml.etree.ElementTree as ET
-ET.register_namespace('', '')
-tree = ET.parse('addon.xml')
-tree.getroot().set('version', '$VERSION')
-tree.write('addon.xml', encoding='unicode', xml_declaration=True)
-"
-          # Preserve standalone="yes" which ET strips
-          sed -i 's|<?xml version=.1.0. encoding=.unicode.?>|<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>|' addon.xml
+          # Patch version in addon.xml using sed (avoids Python XML namespace issues)
+          sed -i "s|<addon id=\"plugin.video.kick\"[^>]*>|<addon id=\"plugin.video.kick\" name=\"KICK.com\" version=\"${VERSION}\" provider-name=\"zales\">|" addon.xml
 
       - name: Build addon zip
         run: |
