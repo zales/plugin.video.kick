@@ -1,8 +1,9 @@
 # -*- coding: UTF-8 -*-
 """Kodi plugin for kick.com."""
 import unicodedata
-from urllib.parse import quote, quote_plus
+from urllib.parse import quote, quote_plus, parse_qs, urlencode, urlparse
 
+import requests
 import xbmcgui
 import xbmcplugin
 import xbmcaddon
@@ -23,8 +24,6 @@ API_PUB_V2 = 'https://api.kick.com/public/v2'
 
 # Cloudflare Worker base URL
 WORKER_BASE = 'https://kodi.zales.dev'
-
-# kept for VOD playback via proxy
 
 # Public API endpoints (require Bearer app token)
 URL_PUB_LIVESTREAMS = API_PUB + '/livestreams'
@@ -50,20 +49,18 @@ PATH          = addon.getAddonInfo('path')
 RESOURCES     = PATH + '/resources/'
 ICON          = RESOURCES + '../icon.png'
 NEXT_PAGE_IMG = RESOURCES + 'right.png'
-askqual       = addon.getSetting('askqual')
 
 # ---------------------------------------------------------------------------
 # Session
 # ---------------------------------------------------------------------------
-import requests
-sessi = requests.Session()
-sessi.headers.update({'User-Agent': UA, 'Accept': 'application/json'})
+session = requests.Session()
+session.headers.update({'User-Agent': UA, 'Accept': 'application/json'})
 
 
 def _api_get(url):
     """GET url, return parsed JSON dict/list or {} on error."""
     try:
-        r = sessi.get(url, timeout=15)
+        r = session.get(url, timeout=15)
         xbmc.log('KICK: GET {} → {}'.format(url[:120], r.status_code), xbmc.LOGINFO)
         r.raise_for_status()
         return r.json()
@@ -81,7 +78,7 @@ def _get_app_token():
     if _APP_TOKEN:
         return _APP_TOKEN
     try:
-        r = sessi.get(URL_APP_TOKEN, timeout=10)
+        r = session.get(URL_APP_TOKEN, timeout=10)
         r.raise_for_status()
         _APP_TOKEN = r.json().get('token', '')
     except Exception as exc:
@@ -91,12 +88,20 @@ def _get_app_token():
 
 def _pub_get(url):
     """GET a Kick public API URL with Bearer app token; return parsed JSON or {}."""
+    global _APP_TOKEN
     token = _get_app_token()
     if not token:
         return {}
     try:
-        r = sessi.get(url, timeout=15, headers={'Authorization': 'Bearer ' + token})
+        r = session.get(url, timeout=15, headers={'Authorization': 'Bearer ' + token})
         xbmc.log('KICK: PUB {} → {}'.format(url[:120], r.status_code), xbmc.LOGINFO)
+        if r.status_code == 401:
+            # Token expired — clear cache and retry once
+            _APP_TOKEN = ''
+            token = _get_app_token()
+            if not token:
+                return {}
+            r = session.get(url, timeout=15, headers={'Authorization': 'Bearer ' + token})
         r.raise_for_status()
         return r.json()
     except Exception as exc:
@@ -202,11 +207,12 @@ def list_subcategories():
                  infoLabels={'title': title, 'plot': title})
     cursor = (jsdata.get('pagination') or {}).get('next_cursor')
     if cursor:
-        base   = murl.split('?')[0]
-        params = murl.split('?')[1] if '?' in murl else ''
-        pdict  = dict(p.split('=', 1) for p in params.split('&') if '=' in p)
+        parsed   = urlparse(murl)
+        pdict    = parse_qs(parsed.query, keep_blank_values=True)
         pdict.pop('cursor', None)
-        next_url = base + '?' + '&'.join('{}={}'.format(k, v) for k, v in pdict.items()) + '&cursor=' + quote_plus(cursor)
+        flat     = {k: v[0] for k, v in pdict.items()}
+        flat['cursor'] = cursor
+        next_url = parsed._replace(query=urlencode(flat)).geturl()
         add_item(plugin.url_for(list_subcategories, url=next_url),
                  str(language(30020)), NEXT_PAGE_IMG, folder=True)
     _end_dir()
@@ -242,7 +248,7 @@ def list_channel(slug):
     jsdata = _pub_get(URL_PUB_CHANNEL + '?slug=' + quote(slug, safe=''))
     ch     = (jsdata.get('data') or [{}])[0]
 
-    pic         = ICON
+    pic         = ch.get('profile_picture') or ICON
     username    = ch.get('slug', slug)
     stream      = ch.get('stream') or {}
 
@@ -339,7 +345,8 @@ def _resolve_stream(slug):
         return _api_get(slug).get('url')
     if slug.startswith('http'):
         # Direct VOD / clip source URL
-        return _api_get(slug).get('source') or _api_get(slug).get('url')
+        data = _api_get(slug)
+        return data.get('source') or data.get('url')
     # Channel slug: proxy the internal livestream endpoint via Worker
     return (_api_get(URL_PROXY_STREAM.format(slug=quote(slug, safe='')))
             .get('data') or {}).get('playback_url')
@@ -347,6 +354,7 @@ def _resolve_stream(slug):
 
 def _setup_inputstream(play_item, is_helper, hea):
     """Configure InputStream Adaptive properties on a ListItem."""
+    askqual = addon.getSetting('askqual')
     play_item.setProperty('IsPlayable', 'true')
     play_item.setProperty('inputstream', is_helper.inputstream_addon)
     if askqual != 'false':
