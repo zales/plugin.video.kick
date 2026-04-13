@@ -183,6 +183,22 @@ def make_follow_menu(slug, following):
              'RunPlugin({})'.format(plugin.url_for(follow_action, slug=slug)))]
 
 
+def make_channel_menu(slug, name, img, following=None):
+    """Context menu with Kodi favourites + optional follow/unfollow."""
+    fav_url = plugin.url_for(list_channel, slug=slug)
+    items = [
+        ('Pridat do oblibenych',
+         'RunPlugin({})'.format(plugin.url_for(add_favourite, slug=slug, name=name, img=img))),
+    ]
+    if following is True:
+        items.append((str(language(30019)),
+                      'RunPlugin({})'.format(plugin.url_for(unfollow_action, slug=slug))))
+    elif following is False:
+        items.append((str(language(30023)),
+                      'RunPlugin({})'.format(plugin.url_for(follow_action, slug=slug))))
+    return items
+
+
 def add_header(text):
     """Non-clickable section label."""
     li = xbmcgui.ListItem(label=text)
@@ -222,18 +238,11 @@ def home():
 
     add_item(plugin.url_for(select_language),
              '{}: {}'.format(str(language(30000)), lang_lab), ICON)
-    if logged_in:
-        add_item(plugin.url_for(list_followed),
-                 str(language(30002)), ICON, folder=True)
-    else:
-        add_item(plugin.url_for(login_menu), str(language(30001)), ICON)
     add_item(plugin.url_for(live, url=URL_LIVESTREAMS.format(lang=lang_val)),
              str(language(30003)), ICON, folder=True)
     add_item(plugin.url_for(list_categories), str(language(30004)), ICON, folder=True)
     add_item(plugin.url_for(search_dialog),     str(language(30005)), ICON)
     add_item(plugin.url_for(settings),   str(language(30041)), ICON)
-    if logged_in:
-        add_item(plugin.url_for(logout), str(language(30006)), ICON)
     _end_dir()
 
 
@@ -304,9 +313,12 @@ def live():
         viewers   = x.get('viewers')
         thumbnail = (x.get('thumbnail') or {}).get('src', ICON)
         slug      = (x.get('channel') or {}).get('slug', '')
+        pic       = (x.get('channel') or {}).get('user', {}).get('profile_pic', ICON)
         label     = '[B]{}[/B] {} [{}]'.format(slug, title_raw, viewers)
         add_item(plugin.url_for(list_channel, slug=slug), label, thumbnail,
-                 infoLabels={'title': label, 'plot': label}, folder=True)
+                 infoLabels={'title': label, 'plot': label},
+                 contextmenu=make_channel_menu(slug, slug, pic),
+                 folder=True)
     if jsdata.get('next_page_url'):
         next_raw = jsdata['next_page_url']
         nturl = '{}|{}'.format(tt, next_raw) if tt else next_raw
@@ -318,14 +330,12 @@ def live():
 @plugin.route('/channel/<slug>')
 def list_channel(slug):
     """Show channel page: live stream (if any), past VODs, and clips."""
-    auth_ok     = apply_auth()
     jsdata      = _api_get(URL_CHANNEL.format(slug=quote(slug, safe='')))
-    following   = jsdata.get('following') if auth_ok else None
-    contextmenu = make_follow_menu(slug, bool(following)) if auth_ok else []
 
     user       = jsdata.get('user') or {}
     pic        = user.get('profile_pic', ICON)
-    username   = user.get('username', '')
+    username   = user.get('username', slug)
+    contextmenu = make_channel_menu(slug, username, pic)
     livestream = jsdata.get('livestream')
 
     if livestream:
@@ -432,6 +442,23 @@ def _setup_inputstream(play_item, is_helper, hea):
     play_item.setMimeType('application/vnd.apple.mpegurl')
     play_item.setProperty('inputstream.adaptive.manifest_update_parameter', 'full')
     play_item.setProperty('inputstream.adaptive.manifest_headers', hea)
+
+
+@plugin.route('/add_favourite')
+def add_favourite():
+    """Add a channel to Kodi's built-in favourites list."""
+    slug = plugin.args.get('slug', '')
+    name = plugin.args.get('name', slug)
+    img  = plugin.args.get('img', ICON)
+    if not slug:
+        return
+    fav_url = plugin.url_for(list_channel, slug=slug)
+    xbmc.executebuiltin('AddFavourite({},{},{},{})'.format(
+        fav_url, 'window', name, img))
+    xbmcgui.Dialog().notification(
+        'KICK.com',
+        '{} pridano do oblibenych'.format(name),
+        xbmcgui.NOTIFICATION_INFO, 3000, False)
 
 
 @plugin.route('/login_menu')
