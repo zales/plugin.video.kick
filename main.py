@@ -29,7 +29,6 @@ API_PUB_V2 = 'https://api.kick.com/public/v2'
 WORKER_BASE = 'https://kodi.zales.dev'
 
 # kept for VOD playback via proxy
-URL_VIDEO = API_V1 + '/video/{uuid}'
 
 # Public API endpoints (require Bearer app token)
 URL_PUB_LIVESTREAMS = API_PUB + '/livestreams'
