@@ -55,18 +55,9 @@ askqual       = addon.getSetting('askqual')
 # ---------------------------------------------------------------------------
 # Session
 # ---------------------------------------------------------------------------
-_lib_path = addon.getAddonInfo('path') + '/resources/lib'
-if _lib_path not in sys.path:
-    sys.path.insert(0, _lib_path)
-
-try:
-    import cloudscraper
-    sessi = cloudscraper.create_scraper(browser={'browser': 'chrome', 'platform': 'android', 'desktop': False})
-except Exception as _e:
-    xbmc.log('KICKCOMMB: cloudscraper failed ({}), falling back to requests'.format(_e), xbmc.LOGWARNING)
-    import requests
-    sessi = requests.Session()
-    sessi.headers.update({'User-Agent': UA})
+import requests
+sessi = requests.Session()
+sessi.headers.update({'User-Agent': UA, 'Accept': 'application/json'})
 
 
 def _api_get(url):

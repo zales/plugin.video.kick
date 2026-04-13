@@ -22,7 +22,7 @@
         <assets>
             <icon>icon.png</icon>
         </assets>
-        <news>v1.7 - expanded language list to 41 languages; fixed BBCode tags, auth edge cases, URL encoding, cloudscraper UA; v1.6 - bundled cloudscraper</news>
+        <news>v2.3 - Kick OAuth 2.1 PKCE login, add to favourites, removed bundled cloudscraper</news>
     </extension>
 </addon>
 
