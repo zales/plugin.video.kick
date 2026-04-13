@@ -164,16 +164,6 @@ export default {
       return new Response(obj.body, { headers });
     }
 
-    if (!key) {
-      const obj = await env.BUCKET.get('index.html');
-      if (obj) {
-        const h = new Headers();
-        h.set('Content-Type', 'text/html; charset=utf-8');
-        h.set('Cache-Control', 'public, max-age=300');
-        return new Response(obj.body, { headers: h });
-      }
-    }
-
     const listed = await env.BUCKET.list({ prefix: key, delimiter: '/' });
     const dirPath = '/' + key;
     let rows = '';
