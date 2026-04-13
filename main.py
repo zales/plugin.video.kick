@@ -147,7 +147,7 @@ def add_item(url, name, image, infoLabels=None, contextmenu=None, IsPlayable=Fal
     li.setInfo(type='video', infoLabels=infoLabels or {'title': name})
     li.setArt({'thumb': image, 'poster': image, 'banner': image})
     if contextmenu:
-        li.addContextMenuItems(contextmenu)
+        li.addContextMenuItems(contextmenu, replaceItems=True)
     xbmcplugin.addDirectoryItem(handle=plugin.handle, url=url, listitem=li, isFolder=folder)
 
 
