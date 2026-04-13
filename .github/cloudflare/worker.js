@@ -21,6 +21,8 @@ function connectPage(sessionId, baseUrl) {
   const bookmarklet = `javascript:(function(){var d={};var ls={};for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);ls[k]=localStorage.getItem(k);}d.localStorage=ls;d.token=localStorage.getItem('token')||localStorage.getItem('accessToken')||'';fetch('${baseUrl}/token/${sessionId}',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)}).then(function(r){return r.text();}).then(function(t){alert('Kodi: '+t+' — vra\\u0165te se do Kodi!');}).catch(function(e){alert('Chyba: '+e.message);});})();`;
 
   const script = `javascript:(function(){var d={};var ls={};for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);ls[k]=localStorage.getItem(k);}d.localStorage=ls;d.token=localStorage.getItem('token')||localStorage.getItem('accessToken')||'';fetch('${baseUrl}/token/${sessionId}',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)}).then(function(r){return r.text();}).then(function(t){alert('Kodi: '+t);}).catch(function(e){alert('Chyba: '+e.message);});})();`;
+  // scriptBody = script without "javascript:" prefix — user types that manually to bypass browser security
+  const scriptBody = script.replace(/^javascript:/, '');
 
   return `<!DOCTYPE html>
 <html lang="cs">
@@ -55,7 +57,7 @@ function connectPage(sessionId, baseUrl) {
     <strong>Zkopírujte skript</strong>
     <button class="btn" onclick="copyScript()">&#128203; Kopírovat skript</button>
     <div class="ok" id="m1">&#10003; Zkopírováno!</div>
-    <div class="hint">Skript vložíte do adresního řádku prohlížeče na kroku 3.</div>
+    <div class="hint">Zkopíruje se jen tělo skriptu (bez <code>javascript:</code>).</div>
   </div>
 </div>
 
@@ -74,10 +76,15 @@ function connectPage(sessionId, baseUrl) {
 <div class="step">
   <div class="num">3</div>
   <div class="txt">
-    <strong>Vložte skript do adresního řádku</strong>
+    <strong>Spusťte skript v adresním řádku</strong>
     <div class="hint" style="color:#ddd;font-size:.95rem">
-      Po přihlášení ťukněte na adresní řádek (kde je <em>kick.com</em>),
-      <b>vložte</b> zkopírovaný skript a potvrďte Enter / Go.
+      Po přihlášení ťukněte na adresní řádek (kde je <em>kick.com</em>) a:
+      <ol style="margin:8px 0 0 0;padding-left:18px;line-height:2">
+        <li>Napište ručně: <code style="background:#1a1a1a;padding:2px 6px;border-radius:4px;color:#53fc18">javascript:</code></li>
+        <li>Pak vložte zkopírovaný skript (Ctrl+V / Cmd+V / dlouhé tapnutí → Vložit)</li>
+        <li>Potvrďte <b>Enter</b> / <b>Go</b></li>
+      </ol>
+      <span style="color:#888">Prohlížeč blokuje vložení celého <code>javascript:</code> URL — proto se píše ručně.</span>
     </div>
   </div>
 </div>
@@ -93,7 +100,7 @@ function connectPage(sessionId, baseUrl) {
 </div>
 
 <script>
-var SCRIPT = ${JSON.stringify(script)};
+var SCRIPT = ${JSON.stringify(scriptBody)};
 function copyScript() {
   copyText(SCRIPT, 'm1');
 }
