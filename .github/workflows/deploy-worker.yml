@@ -1,0 +1,26 @@
+name: Deploy Cloudflare Worker
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/cloudflare/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy Cloudflare Worker
+        working-directory: .github/cloudflare
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+        run: |
+          npm install -g wrangler@4 --quiet
+          sed -i "s|\$KV_AUTH_RELAY_ID|${{ secrets.CF_KV_AUTH_RELAY_ID }}|g" wrangler.toml
+          echo "${{ secrets.GOOGLE_CLIENT_SECRET }}" | npx wrangler secret put GOOGLE_CLIENT_SECRET
+          npx wrangler deploy
