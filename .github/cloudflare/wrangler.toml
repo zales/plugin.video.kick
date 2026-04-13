@@ -1,0 +1,11 @@
+name = "kodi-repo"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "kodi-repo"
+
+routes = [
+  { pattern = "kodi.zales.dev/*", zone_name = "zales.dev" }
+]
