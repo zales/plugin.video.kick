@@ -186,7 +186,7 @@ def home():
     lang_lab  = addon.getSetting('lang_lab')
 
     add_item(plugin.url_for(select_language),
-             '{}: {}'.format(str(language(30000)), lang_lab), ICON)
+             '{}{}'.format(str(language(30000)), lang_lab), ICON)
     add_item(plugin.url_for(live, url=URL_PUB_LIVESTREAMS + '?language={}&limit=100'.format(lang_val)),
              str(language(30003)), ICON, folder=True)
     add_item(plugin.url_for(list_subcategories, url=URL_PUB_V2_CATS + '?limit=50'),
