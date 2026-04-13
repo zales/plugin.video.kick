@@ -1,12 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
 
-    <!-- Account -->
-    <category label="30034">
-        <setting id="username" type="text" label="30035" default="" />
-        <setting id="password" type="text" label="30036" default="" option="hidden" />
-    </category>
-
     <!-- Playback -->
     <category label="30039">
         <setting id="askqual" type="bool" label="30040" default="false" />
