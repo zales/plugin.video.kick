@@ -187,7 +187,7 @@ def home():
 
     add_item(plugin.url_for(select_language),
              '{}: {}'.format(str(language(30000)), lang_lab), ICON)
-    add_item(plugin.url_for(live, url=URL_PUB_LIVESTREAMS + '?language={}&limit=25'.format(lang_val)),
+    add_item(plugin.url_for(live, url=URL_PUB_LIVESTREAMS + '?language={}&limit=100'.format(lang_val)),
              str(language(30003)), ICON, folder=True)
     add_item(plugin.url_for(list_subcategories, url=URL_PUB_V2_CATS + '?limit=50'),
              str(language(30004)), ICON, folder=True)
@@ -217,7 +217,7 @@ def list_subcategories():
         cat_id = x.get('id', '')
         title  = x.get('name', '')
         thumb  = x.get('thumbnail') or ICON
-        live_url = URL_PUB_LIVESTREAMS + '?category_id={}&limit=25'.format(cat_id)
+        live_url = URL_PUB_LIVESTREAMS + '?category_id={}&limit=100'.format(cat_id)
         add_item(plugin.url_for(live, url=live_url), title, thumb, folder=True,
                  infoLabels={'title': title, 'plot': title})
     cursor = (jsdata.get('pagination') or {}).get('next_cursor')
@@ -236,7 +236,7 @@ def list_subcategories():
 @plugin.route('/live')
 def live():
     """List currently live streams (public API)."""
-    url    = plugin.args.get('url', URL_PUB_LIVESTREAMS + '?limit=25')
+    url    = plugin.args.get('url', URL_PUB_LIVESTREAMS + '?limit=100')
     jsdata = _pub_get(url)
     for x in (jsdata.get('data') or []):
         title_raw = clean_title(x.get('stream_title', ''))
@@ -404,7 +404,7 @@ def list_search():
         cat_id = x.get('id', '')
         title  = x.get('name', '')
         thumb  = x.get('thumbnail') or ICON
-        live_url = URL_PUB_LIVESTREAMS + '?category_id={}&limit=25'.format(cat_id)
+        live_url = URL_PUB_LIVESTREAMS + '?category_id={}&limit=100'.format(cat_id)
         add_item(plugin.url_for(live, url=live_url), title, thumb,
                  infoLabels={'title': title, 'plot': title},
                  folder=True)
