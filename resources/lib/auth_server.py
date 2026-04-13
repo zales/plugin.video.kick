@@ -258,11 +258,13 @@ def _instructions_page(port, lan_ip='127.0.0.1'):
 <div class="step">
   <div class="num">2</div>
   <div class="txt">
-    <strong>Přihlaste se na kick.com</strong>
-    <a class="btn secondary" href="https://kick.com/login" target="_blank">
-      Otevřít kick.com/login &#8599;
-    </a>
-    <div class="hint">Přihlaste se přes Google. Po přihlášení zůstaňte na kick.com.</div>
+    <strong>Otevřete kick.com/login <em>v prohlížeči</em></strong>
+    <button class="btn secondary" onclick="copyKickUrl()">&#128203; Kopírovat kick.com/login</button>
+    <div id="kick-msg" style="display:none;color:#53fc18;font-size:.9rem;margin-top:6px;text-align:center">&#10003; Zkopírováno!</div>
+    <div class="hint" style="color:#ddd">
+      Otevřete <strong>Chrome</strong> nebo <strong>Safari</strong>, vložte adresu do řádku a přihlaste se přes Google.<br>
+      <span style="color:#888">(Netapujte odkaz — otevřelo by to aplikaci.)</span>
+    </div>
   </div>
 </div>
 
@@ -302,6 +304,22 @@ function copyScript() {{
     document.execCommand('copy');
     document.body.removeChild(ta);
     document.getElementById('copy-msg').style.display = 'block';
+  }}
+}}
+function copyKickUrl() {{
+  var url = 'https://kick.com/login';
+  if (navigator.clipboard && navigator.clipboard.writeText) {{
+    navigator.clipboard.writeText(url).then(function() {{
+      document.getElementById('kick-msg').style.display = 'block';
+    }});
+  }} else {{
+    var ta = document.createElement('textarea');
+    ta.value = url;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    document.getElementById('kick-msg').style.display = 'block';
   }}
 }}
 </script>
