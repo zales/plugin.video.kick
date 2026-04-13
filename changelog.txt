@@ -1,3 +1,6 @@
+2.5.1
+- fix: favourites use channel slug as stable title instead of live stream title
+
 2.5.0
 - refactor: remove OAuth PKCE auth server from worker.js (login not used)
 - refactor: remove dead constants (API_BASE/V1/V2), unused functions (title_with_viewers, add_header), unused params (fanart, contextmenu)
