@@ -5,224 +5,154 @@
  * Bindings:
  *   BUCKET     — R2 bucket "kodi-repo"
  *   AUTH_RELAY — KV namespace for ephemeral auth tokens (TTL 10 min)
+ *
+ * Secrets (wrangler secret put):
+ *   GOOGLE_CLIENT_SECRET  — OAuth 2.0 client secret
  */
 
-// ---------------------------------------------------------------------------
-// Auth relay helpers
-// ---------------------------------------------------------------------------
+const GOOGLE_CLIENT_ID = '788340811798-ocpqf9hngtsqa7krs3mdr8ngojq6h8b8.apps.googleusercontent.com';
+const FIREBASE_API_KEY = 'AIzaSyBt03MQfMaVa2QNnADsIUgT1LBOOx7SET0';
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Methods': 'GET, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type',
 };
 
 function connectPage(sessionId, baseUrl) {
-  const bookmarklet = `javascript:(function(){var d={};var ls={};for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);ls[k]=localStorage.getItem(k);}d.localStorage=ls;d.token=localStorage.getItem('token')||localStorage.getItem('accessToken')||'';fetch('${baseUrl}/token/${sessionId}',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)}).then(function(r){return r.text();}).then(function(t){alert('Kodi: '+t+' — vra\\u0165te se do Kodi!');}).catch(function(e){alert('Chyba: '+e.message);});})();`;
-
-  const script = `javascript:(function(){var d={};var ls={};for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);ls[k]=localStorage.getItem(k);}d.localStorage=ls;d.token=localStorage.getItem('token')||localStorage.getItem('accessToken')||'';fetch('${baseUrl}/token/${sessionId}',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)}).then(function(r){return r.text();}).then(function(t){alert('Kodi: '+t);}).catch(function(e){alert('Chyba: '+e.message);});})();`;
-  // scriptBody = script without "javascript:" prefix — user types that manually to bypass browser security
-  const scriptBody = script.replace(/^javascript:/, '');
-
+  const params = new URLSearchParams({
+    client_id:     GOOGLE_CLIENT_ID,
+    redirect_uri:  `${baseUrl}/oauth/callback`,
+    response_type: 'code',
+    scope:         'openid email profile',
+    state:         sessionId,
+    prompt:        'select_account',
+  });
+  const googleUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params}`;
   return `<!DOCTYPE html>
-<html lang="cs">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Kodi KICK.com — Login</title>
+<html lang="cs"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kodi KICK.com - Login</title>
 <style>
-  *    { box-sizing: border-box; }
-  body { font-family: sans-serif; max-width: 500px; margin: 0 auto; padding: 24px 16px;
-         background: #0a120a; color: #ddd; }
-  h2   { color: #53fc18; margin-bottom: 24px; font-size: 1.3rem; }
-  .step{ display: flex; align-items: flex-start; gap: 14px; margin-bottom: 22px; }
-  .num { flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%;
-         background: #53fc18; color: #000; font-weight: 800; font-size: 1.1rem;
-         display: flex; align-items: center; justify-content: center; }
-  .txt { line-height: 1.5; padding-top: 6px; }
-  .btn { display: block; width: 100%; padding: 16px; margin-top: 10px;
-         background: #53fc18; color: #000; font-weight: 800; font-size: 1.1rem;
-         border: none; border-radius: 10px; cursor: pointer; text-align: center; }
-  .ok  { display: none; color: #53fc18; font-size: .9rem; margin-top: 6px; text-align: center; }
-  .hint{ color: #888; font-size: .82rem; margin-top: 6px; }
-  .hint b { color: #ddd; }
-</style>
-</head>
+*{box-sizing:border-box}
+body{font-family:sans-serif;max-width:480px;margin:60px auto;padding:24px 20px;background:#0a120a;color:#ddd;text-align:center}
+h2{color:#53fc18;font-size:1.5rem;margin-bottom:8px}
+.sub{color:#888;font-size:.95rem;margin-bottom:48px;line-height:1.6}
+.btn{display:inline-flex;align-items:center;gap:14px;padding:18px 36px;background:#fff;color:#111;font-weight:700;font-size:1.1rem;border-radius:12px;text-decoration:none;box-shadow:0 4px 20px rgba(0,0,0,.5)}
+.btn svg{width:26px;height:26px;flex-shrink:0}
+.note{color:#555;font-size:.82rem;margin-top:40px;line-height:1.7}
+</style></head>
 <body>
 <h2>&#127916; KICK.com Login pro Kodi</h2>
-
-<div class="step">
-  <div class="num">1</div>
-  <div class="txt">
-    <strong>Zkopírujte skript</strong>
-    <button class="btn" onclick="copyScript()">&#128203; Kopírovat skript</button>
-    <div class="ok" id="m1">&#10003; Zkopírováno!</div>
-    <div class="hint">Zkopíruje se jen tělo skriptu (bez <code>javascript:</code>).</div>
-  </div>
-</div>
-
-<div class="step">
-  <div class="num">2</div>
-  <div class="txt">
-    <strong>Otevřete kick.com/login <em>v prohlížeči</em></strong>
-    <button class="btn" style="background:#1a2a1a;color:#53fc18;border:2px solid #53fc18"
-            onclick="copyKickUrl()">&#128203; Kopírovat kick.com/login</button>
-    <div class="ok" id="m2">&#10003; Zkopírováno!</div>
-    <div class="hint"><b>Otevřete Chrome nebo Safari</b>, vložte adresu a přihlaste se přes Google.<br>
-    <span>(Netapujte odkaz — mohla by se otevřít aplikace.)</span></div>
-  </div>
-</div>
-
-<div class="step">
-  <div class="num">3</div>
-  <div class="txt">
-    <strong>Spusťte skript v adresním řádku</strong>
-    <div class="hint" style="color:#ddd;font-size:.95rem">
-      Po přihlášení ťukněte na adresní řádek (kde je <em>kick.com</em>) a:
-      <ol style="margin:8px 0 0 0;padding-left:18px;line-height:2">
-        <li>Napište ručně: <code style="background:#1a1a1a;padding:2px 6px;border-radius:4px;color:#53fc18">javascript:</code></li>
-        <li>Pak vložte zkopírovaný skript (Ctrl+V / Cmd+V / dlouhé tapnutí → Vložit)</li>
-        <li>Potvrďte <b>Enter</b> / <b>Go</b></li>
-      </ol>
-      <span style="color:#888">Prohlížeč blokuje vložení celého <code>javascript:</code> URL — proto se píše ručně.</span>
-    </div>
-  </div>
-</div>
-
-<div class="step">
-  <div class="num">4</div>
-  <div class="txt">
-    <strong>Hotovo!</strong>
-    <div class="hint" style="color:#ddd;font-size:.95rem">
-      Zobrazí se hláška „Kodi: OK" — vraťte se do Kodi, jste přihlášeni.
-    </div>
-  </div>
-</div>
-
-<script>
-var SCRIPT = ${JSON.stringify(scriptBody)};
-function copyScript() {
-  copyText(SCRIPT, 'm1');
-}
-function copyKickUrl() {
-  copyText('https://kick.com/login', 'm2');
-}
-function copyText(text, msgId) {
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(text).then(function() {
-      document.getElementById(msgId).style.display = 'block';
-    });
-  } else {
-    var ta = document.createElement('textarea');
-    ta.value = text;
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand('copy');
-    document.body.removeChild(ta);
-    document.getElementById(msgId).style.display = 'block';
-  }
-}
-</script>
-</body>
-</html>`;
+<p class="sub">Prihlaste se pres Google. Po prihlaseni<br>se Kodi automaticky prihlas.</p>
+<a class="btn" href="${googleUrl}">
+  <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+  Prihlasit se pres Google
+</a>
+<p class="note">Vase prihlasovaci udaje nejsou sdileny s Kodi.<br>Token je ulozen lokalne na vasem zarizeni.</p>
+</body></html>`;
 }
 
-function extractToken(data) {
-  const KEYS = ['token', 'access_token', 'accessToken', 'bearer', 'auth_token', 'auth._token.local'];
-  for (const k of KEYS) {
-    const v = data[k];
-    if (v && typeof v === 'string' && v.length > 20) return v.trim();
-  }
-  const ls = data.localStorage;
-  if (ls && typeof ls === 'object') {
-    for (const [k, v] of Object.entries(ls)) {
-      if (typeof v !== 'string') continue;
-      if (v.length > 40 && v.length < 2000 && !v.includes(' ')) {
-        if (['token','auth','bearer'].some(h => k.toLowerCase().includes(h))) return v.trim();
-      }
-    }
-    for (const [, v] of Object.entries(ls)) {
-      if (typeof v === 'string' && v.length > 40 && v.length < 2000 && !v.includes(' ')) return v.trim();
-    }
-  }
-  return null;
+function errorPage(msg) {
+  return new Response(
+    '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Chyba</title>' +
+    '<style>body{font-family:sans-serif;text-align:center;padding:60px;background:#0a120a;color:#ddd;}h2{color:#f55;}code{background:#111;padding:4px 8px;border-radius:4px;word-break:break-all;}</style></head>' +
+    '<body><h2>&#10007; Chyba prihlaseni</h2><p><code>' + msg + '</code></p></body></html>',
+    { status: 500, headers: { 'Content-Type': 'text/html; charset=utf-8' } }
+  );
 }
-
-// ---------------------------------------------------------------------------
-// Main fetch handler
-// ---------------------------------------------------------------------------
 
 export default {
   async fetch(request, env) {
-    const url  = new URL(request.url);
-    let path   = decodeURIComponent(url.pathname);
+    const url     = new URL(request.url);
+    let path      = decodeURIComponent(url.pathname);
     const baseUrl = url.origin;
 
-    // -----------------------------------------------------------------------
-    // Auth relay routes
-    // -----------------------------------------------------------------------
-
-    // OPTIONS preflight
-    if (request.method === 'OPTIONS') {
+    if (request.method === 'OPTIONS')
       return new Response(null, { status: 204, headers: CORS_HEADERS });
-    }
 
-    // GET /connect/:id  — show mobile instructions page
+    // GET /connect/:id
     const connectMatch = path.match(/^\/connect\/([a-zA-Z0-9_-]{8,64})$/);
-    if (connectMatch) {
-      const sessionId = connectMatch[1];
-      return new Response(connectPage(sessionId, baseUrl), {
-        headers: { 'Content-Type': 'text/html; charset=utf-8', ...CORS_HEADERS },
+    if (connectMatch)
+      return new Response(connectPage(connectMatch[1], baseUrl), {
+        headers: { 'Content-Type': 'text/html; charset=utf-8' },
       });
+
+    // GET /oauth/callback
+    if (path === '/oauth/callback') {
+      const code  = url.searchParams.get('code');
+      const state = url.searchParams.get('state');
+      const error = url.searchParams.get('error');
+      if (error || !code || !state)
+        return errorPage('Login zrusen: ' + (error || 'chybi parametry'));
+      try {
+        const gResp = await fetch('https://oauth2.googleapis.com/token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({
+            code, grant_type: 'authorization_code',
+            client_id: GOOGLE_CLIENT_ID, client_secret: env.GOOGLE_CLIENT_SECRET,
+            redirect_uri: `${baseUrl}/oauth/callback`,
+          }).toString(),
+        });
+        const gTokens = await gResp.json();
+        if (!gTokens.id_token) return errorPage('Google token chyba: ' + JSON.stringify(gTokens));
+
+        const fbResp = await fetch(
+          `https://identitytoolkit.googleapis.com/v1/accounts:signInWithIdp?key=${FIREBASE_API_KEY}`,
+          { method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              postBody: `id_token=${gTokens.id_token}&providerId=google.com`,
+              requestUri: baseUrl, returnIdpCredential: true, returnSecureToken: true,
+            }) }
+        );
+        const fbData = await fbResp.json();
+        if (!fbData.idToken) return errorPage('Firebase chyba: ' + JSON.stringify(fbData));
+
+        const kickResp = await fetch('https://kick.com/api/v1/google-mobile-login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({ token: fbData.idToken }),
+        });
+        const kickData = await kickResp.json();
+        const bearer = kickData.token || kickData.access_token
+          || (kickData.data && (kickData.data.token || kickData.data.access_token));
+        if (!bearer) return errorPage('Kick chyba (' + kickResp.status + '): ' + JSON.stringify(kickData));
+
+        await env.AUTH_RELAY.put(`token:${state}`, bearer, { expirationTtl: 600 });
+
+        return new Response(
+          '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Hotovo!</title>' +
+          '<style>body{font-family:sans-serif;text-align:center;padding:60px;background:#0a120a;color:#ddd;}h2{color:#53fc18;font-size:2rem;}p{color:#aaa;margin-top:16px;}</style></head>' +
+          '<body><h2>&#10003; Prihlaseni uspesne!</h2><p>Vrate se do Kodi - jste prihlaseni.</p></body></html>',
+          { headers: { 'Content-Type': 'text/html; charset=utf-8' } }
+        );
+      } catch (e) {
+        return errorPage('Neocekavana chyba: ' + e.message);
+      }
     }
 
-    // POST /token/:id  — bookmarklet posts token here
+    // GET /token/:id
     const tokenMatch = path.match(/^\/token\/([a-zA-Z0-9_-]{8,64})$/);
-    if (tokenMatch && request.method === 'POST') {
-      const sessionId = tokenMatch[1];
-      let data;
-      try { data = await request.json(); } catch { return new Response('Bad JSON', { status: 400, headers: CORS_HEADERS }); }
-      const token = extractToken(data);
-      if (!token) return new Response('Token not found in payload', { status: 400, headers: CORS_HEADERS });
-      // Store in KV with 10 minute TTL
-      await env.AUTH_RELAY.put(`token:${sessionId}`, token, { expirationTtl: 600 });
-      return new Response('OK', { status: 200, headers: CORS_HEADERS });
-    }
-
-    // GET /token/:id  — Kodi polls for token
     if (tokenMatch && request.method === 'GET') {
-      const sessionId = tokenMatch[1];
-      const token = await env.AUTH_RELAY.get(`token:${sessionId}`);
+      const token = await env.AUTH_RELAY.get(`token:${tokenMatch[1]}`);
       if (!token) return new Response('', { status: 204, headers: CORS_HEADERS });
-      // Delete after Kodi reads it
-      await env.AUTH_RELAY.delete(`token:${sessionId}`);
+      await env.AUTH_RELAY.delete(`token:${tokenMatch[1]}`);
       return new Response(JSON.stringify({ token }), {
         status: 200,
         headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
       });
     }
 
-    // -----------------------------------------------------------------------
-    // R2 repository routes (existing)
-    // -----------------------------------------------------------------------
-
+    // R2 repository
     const key = path.replace(/^\//, '');
 
-    // --- Serve file directly ---
     if (key && !key.endsWith('/')) {
       const rangeHeader = request.headers.get('Range');
       const obj = await env.BUCKET.get(key, rangeHeader ? { range: request.headers } : undefined);
       if (!obj) return new Response('Not Found', { status: 404 });
       const headers = new Headers();
       const ext = key.split('.').pop().toLowerCase();
-      const mimeTypes = {
-        xml: 'application/xml',
-        md5: 'text/plain',
-        zip: 'application/zip',
-        png: 'image/png',
-        jpg: 'image/jpeg',
-        jpeg: 'image/jpeg',
-      };
+      const mimeTypes = { xml:'application/xml', md5:'text/plain', zip:'application/zip', png:'image/png', jpg:'image/jpeg', jpeg:'image/jpeg' };
       headers.set('Content-Type', mimeTypes[ext] || obj.httpMetadata?.contentType || 'application/octet-stream');
       headers.set('Cache-Control', ext === 'zip' ? 'no-cache' : 'public, max-age=300');
       headers.set('Accept-Ranges', 'bytes');
@@ -234,57 +164,31 @@ export default {
       return new Response(obj.body, { headers });
     }
 
-    // --- Serve index.html for root ---
     if (!key) {
       const obj = await env.BUCKET.get('index.html');
       if (obj) {
-        const headers = new Headers();
-        headers.set('Content-Type', 'text/html; charset=utf-8');
-        headers.set('Cache-Control', 'public, max-age=300');
-        return new Response(obj.body, { headers });
+        const h = new Headers();
+        h.set('Content-Type', 'text/html; charset=utf-8');
+        h.set('Cache-Control', 'public, max-age=300');
+        return new Response(obj.body, { headers: h });
       }
     }
 
-    // --- Directory listing ---
-    const prefix  = key;  // '' for root, 'subdir/' for subdirs
-    const listed  = await env.BUCKET.list({ prefix, delimiter: '/' });
-
-    // Build Apache-style HTML (Kodi parses this format)
-    const dirPath = '/' + prefix;
+    const listed = await env.BUCKET.list({ prefix: key, delimiter: '/' });
+    const dirPath = '/' + key;
     let rows = '';
-
-    // Parent directory link (not for root)
-    if (prefix) {
-      const parent = '/' + prefix.split('/').slice(0, -2).join('/');
+    if (key) {
+      const parent = '/' + key.split('/').slice(0, -2).join('/');
       rows += `<tr><td><a href="${parent || '/'}">../</a></td><td>-</td><td>-</td></tr>\n`;
     }
+    for (const d of (listed.delimitedPrefixes || []))
+      rows += `<tr><td><a href="/${d}">${d.replace(key, '')}</a></td><td>-</td><td>-</td></tr>\n`;
+    for (const obj of (listed.objects || []))
+      rows += `<tr><td><a href="/${obj.key}">${obj.key.replace(key, '')}</a></td><td>${obj.uploaded ? obj.uploaded.toUTCString() : '-'}</td><td>${obj.size}</td></tr>\n`;
 
-    // Sub-directories
-    for (const d of (listed.delimitedPrefixes || [])) {
-      const name = d.replace(prefix, '');
-      rows += `<tr><td><a href="/${d}">${name}</a></td><td>-</td><td>-</td></tr>\n`;
-    }
-
-    // Files
-    for (const obj of (listed.objects || [])) {
-      const name    = obj.key.replace(prefix, '');
-      const size    = obj.size;
-      const modified = obj.uploaded?.toUTCString() ?? '-';
-      rows += `<tr><td><a href="/${obj.key}">${name}</a></td><td>${modified}</td><td>${size}</td></tr>\n`;
-    }
-
-    const html = `<!DOCTYPE HTML>
-<html><head><title>Index of ${dirPath}</title></head>
-<body><h1>Index of ${dirPath}</h1>
-<table>
-<tr><th>Name</th><th>Last modified</th><th>Size</th></tr>
-<tr><td colspan="3"><hr></td></tr>
-${rows}
-<tr><td colspan="3"><hr></td></tr>
-</table></body></html>`;
-
-    return new Response(html, {
-      headers: { 'Content-Type': 'text/html; charset=utf-8' },
-    });
+    return new Response(
+      `<!DOCTYPE HTML><html><head><title>Index of ${dirPath}</title></head><body><h1>Index of ${dirPath}</h1><table><tr><th>Name</th><th>Last modified</th><th>Size</th></tr><tr><td colspan="3"><hr></td></tr>${rows}<tr><td colspan="3"><hr></td></tr></table></body></html>`,
+      { headers: { 'Content-Type': 'text/html; charset=utf-8' } }
+    );
   },
 };
