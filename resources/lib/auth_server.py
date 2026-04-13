@@ -217,40 +217,96 @@ def _instructions_page(port, lan_ip='127.0.0.1'):
     ).format(port=port)
 
     return """<!DOCTYPE html>
-<html lang="en">
+<html lang="cs">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Kodi KICK.com — Google Login</title>
+<title>Kodi KICK.com — Login</title>
 <style>
-  body {{ font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 20px;
+  *    {{ box-sizing: border-box; }}
+  body {{ font-family: sans-serif; max-width: 500px; margin: 0 auto; padding: 24px 16px;
           background: #0a120a; color: #ddd; }}
-  h2   {{ color: #53fc18; }}
-  ol   {{ line-height: 2.6; }}
-  a.bm {{ display: inline-block; padding: 10px 22px; background: #53fc18; color: #000;
-          font-weight: bold; border-radius: 6px; text-decoration: none; font-size: 1rem; }}
-  a    {{ color: #53fc18; }}
-  code {{ background: #111; padding: 2px 8px; border-radius: 3px; }}
+  h2   {{ color: #53fc18; margin-bottom: 24px; font-size: 1.3rem; }}
+  .step{{ display: flex; align-items: flex-start; gap: 14px; margin-bottom: 22px; }}
+  .num {{ flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%;
+          background: #53fc18; color: #000; font-weight: 800; font-size: 1.1rem;
+          display: flex; align-items: center; justify-content: center; }}
+  .txt {{ line-height: 1.5; padding-top: 6px; }}
+  .btn {{ display: block; width: 100%; padding: 16px; margin-top: 10px;
+          background: #53fc18; color: #000; font-weight: 800; font-size: 1.1rem;
+          border: none; border-radius: 10px; cursor: pointer; text-align: center;
+          text-decoration: none; }}
+  .btn.secondary {{ background: #1a2a1a; color: #53fc18; border: 2px solid #53fc18; }}
+  #copy-msg {{ display: none; color: #53fc18; font-size: .9rem; margin-top: 6px;
+               text-align: center; }}
+  .hint {{ color: #888; font-size: .82rem; margin-top: 6px; }}
 </style>
 </head>
 <body>
-<h2>KICK.com — Google Login for Kodi</h2>
-<p>Open this page on any device in your network:<br>
-<a href="{local_url}" style="color:#53fc18">{local_url}</a></p>
-<ol>
-  <li>Drag this button to your <b>bookmarks bar</b>:&nbsp;
-      <a class="bm" href="{bookmarklet}">Get Kick Token</a></li>
-  <li>Open <a href="https://kick.com/login" target="_blank">kick.com/login</a>
-      and log in with <b>Google</b></li>
-  <li>After logging in, click the <b>Get Kick Token</b> bookmark while on kick.com</li>
-  <li>A popup will say <em>"Kodi: OK"</em> — return to Kodi, you are logged in!</li>
-</ol>
-<p style="color:#888;font-size:.85rem">
-  This page is served locally by Kodi on <code>{local_url}</code>.
-  No data leaves your machine.
-</p>
+<h2>&#127916; KICK.com Login pro Kodi</h2>
+
+<div class="step">
+  <div class="num">1</div>
+  <div class="txt">
+    <strong>Zkopírujte skript</strong>
+    <button class="btn" onclick="copyScript()">&#128203; Kopírovat skript</button>
+    <div id="copy-msg">&#10003; Zkopírováno!</div>
+    <div class="hint">Skript bude vložen do adresního řádku prohlížeče.</div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="num">2</div>
+  <div class="txt">
+    <strong>Přihlaste se na kick.com</strong>
+    <a class="btn secondary" href="https://kick.com/login" target="_blank">
+      Otevřít kick.com/login &#8599;
+    </a>
+    <div class="hint">Přihlaste se přes Google. Po přihlášení zůstaňte na kick.com.</div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="num">3</div>
+  <div class="txt">
+    <strong>Vložte skript do adresního řádku</strong>
+    <div class="hint" style="color:#ddd;font-size:.95rem">
+      Ťukněte na adresní řádek prohlížeče (kde je <em>kick.com</em>),
+      <b>vložte</b> zkopírovaný text a potvrďte klávesou Enter / Go.
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="num">4</div>
+  <div class="txt">
+    <strong>Hotovo!</strong>
+    <div class="hint" style="color:#ddd;font-size:.95rem">
+      Zobrazí se hláška „Kodi: OK" — vraťte se do Kodi, jste přihlášeni.
+    </div>
+  </div>
+</div>
+
+<script>
+var SCRIPT = {bookmarklet_json};
+function copyScript() {{
+  if (navigator.clipboard && navigator.clipboard.writeText) {{
+    navigator.clipboard.writeText(SCRIPT).then(function() {{
+      document.getElementById('copy-msg').style.display = 'block';
+    }});
+  }} else {{
+    var ta = document.createElement('textarea');
+    ta.value = SCRIPT;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    document.getElementById('copy-msg').style.display = 'block';
+  }}
+}}
+</script>
 </body>
-</html>""".format(bookmarklet=bookmarklet, port=port, local_url=local_url)
+</html>""".format(bookmarklet_json=json.dumps(bookmarklet), port=port, local_url=local_url)
 
 
 _SUCCESS_PAGE = """<!DOCTYPE html>
