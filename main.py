@@ -16,9 +16,6 @@ from resources.lib.routing import Plugin
 UA        = 'okhttp/4.9.2'
 UA_STREAM = 'Dalvik/2.1.0 (Linux; U; Android 9; SM-G960F Build/R16NW)'
 ADDON_ID  = 'plugin.video.kick'
-API_BASE = 'https://kick.com'
-API_V1   = API_BASE + '/api/v1'
-API_V2   = API_BASE + '/api/v2'
 
 # Public developer API (stable, needs Bearer token from client_credentials)
 API_PUB    = 'https://api.kick.com/public/v1'
@@ -51,7 +48,6 @@ language = addon.getLocalizedString
 
 PATH          = addon.getAddonInfo('path')
 RESOURCES     = PATH + '/resources/'
-FANART        = ''
 ICON          = RESOURCES + '../icon.png'
 NEXT_PAGE_IMG = RESOURCES + 'right.png'
 askqual       = addon.getSetting('askqual')
@@ -136,31 +132,13 @@ def clean_title(s):
     return ''.join(c for c in s if 'So' not in unicodedata.category(c))
 
 
-def title_with_viewers(title, viewers):
-    """Return 'title [viewers]' label string."""
-    return '{} [{}]'.format(title or '', viewers)
-
-
-
-
-
-def add_header(text):
-    """Non-clickable section label."""
-    li = xbmcgui.ListItem(label=text)
-    li.setInfo(type='video', infoLabels={'title': text})
-    xbmcplugin.addDirectoryItem(handle=plugin.handle, url='', listitem=li, isFolder=False)
-
-
-def add_item(url, name, image, fanart=FANART, infoLabels=None,
-             contextmenu=None, IsPlayable=False, folder=False):
+def add_item(url, name, image, infoLabels=None, IsPlayable=False, folder=False):
     """Create a ListItem and add it to the current directory listing."""
     li = xbmcgui.ListItem(label=name)
     if IsPlayable:
         li.setProperty('IsPlayable', 'True')
     li.setInfo(type='video', infoLabels=infoLabels or {'title': name})
     li.setArt({'thumb': image, 'poster': image, 'banner': image})
-    if contextmenu:
-        li.addContextMenuItems(contextmenu, replaceItems=True)
     xbmcplugin.addDirectoryItem(handle=plugin.handle, url=url, listitem=li, isFolder=folder)
 
 
