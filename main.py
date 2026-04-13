@@ -226,6 +226,7 @@ def home():
                  str(language(30002)), ICON, folder=True)
     else:
         add_item(plugin.url_for(login), str(language(30001)), ICON)
+        add_item(plugin.url_for(google_login), str(language(30044)), ICON)
     add_item(plugin.url_for(live, url=URL_LIVESTREAMS.format(lang=lang_val)),
              str(language(30003)), ICON, folder=True)
     add_item(plugin.url_for(list_categories), str(language(30004)), ICON, folder=True)
@@ -477,6 +478,61 @@ def login():
     xbmcgui.Dialog().notification('[COLOR yellowgreen][B]OK[/B][/COLOR]',
                                   str(language(30027)),
                                   xbmcgui.NOTIFICATION_INFO, 5000, False)
+    xbmc.executebuiltin('Container.Refresh')
+
+
+@plugin.route('/google_login')
+def google_login():
+    """Open a local browser page that guides the user through Google OAuth on kick.com."""
+    from resources.lib import auth_server
+
+    port = auth_server.start()
+    local_url = 'http://localhost:{}'.format(port)
+
+    # Try to open the browser automatically (Kodi 20+)
+    try:
+        xbmc.openBrowserWindow(local_url)
+    except AttributeError:
+        pass  # Kodi < 20 — user will open it manually
+
+    progress = xbmcgui.DialogProgress()
+    progress.create(
+        'KICK.com — Google Login',
+        '{}\n\n{}'.format(str(language(30042)), local_url),
+    )
+
+    timeout_secs = 300  # 5 minutes
+    elapsed = 0
+    token = None
+    while elapsed < timeout_secs:
+        if progress.iscanceled():
+            break
+        token = auth_server.get_token()
+        if token:
+            break
+        xbmc.sleep(1000)
+        elapsed += 1
+        progress.update(
+            int(elapsed / timeout_secs * 100),
+            '{}\n\n{}'.format(str(language(30042)), local_url),
+        )
+
+    progress.close()
+    auth_server.stop()
+
+    if not token:
+        xbmcgui.Dialog().notification(
+            'KICK.com', str(language(30043)),
+            xbmcgui.NOTIFICATION_ERROR, 5000)
+        return
+
+    sessi.headers.update({'authorization': 'Bearer ' + token})
+    addon.setSetting('auth_headers', quote_plus(json.dumps(dict(sessi.headers))))
+    addon.setSetting('auth', '1')
+    xbmcgui.Dialog().notification(
+        '[COLOR yellowgreen][B]OK[/B][/COLOR]',
+        str(language(30027)),
+        xbmcgui.NOTIFICATION_INFO, 5000, False)
     xbmc.executebuiltin('Container.Refresh')
 
 

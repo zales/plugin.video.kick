@@ -183,3 +183,15 @@ msgstr "Wybór jakości video"
 msgctxt "#30041"
 msgid "Settings"
 msgstr "Ustawienia"
+
+msgctxt "#30042"
+msgid "Open in your browser and follow the instructions:"
+msgstr "Otwórz w przeglądarce i postępuj zgodnie z instrukcjami:"
+
+msgctxt "#30043"
+msgid "Login cancelled or timed out"
+msgstr "Logowanie anulowane lub przekroczono limit czasu"
+
+msgctxt "#30044"
+msgid "Login with Google"
+msgstr "Zaloguj przez Google"

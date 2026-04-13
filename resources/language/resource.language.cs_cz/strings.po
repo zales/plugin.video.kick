@@ -183,3 +183,15 @@ msgstr "Dotázat se na kvalitu videa"
 msgctxt "#30041"
 msgid "Settings"
 msgstr "Nastavení"
+
+msgctxt "#30042"
+msgid "Open in your browser and follow the instructions:"
+msgstr "Otevřete v prohlížeči a postupujte podle pokynů:"
+
+msgctxt "#30043"
+msgid "Login cancelled or timed out"
+msgstr "Přihlášení zrušeno nebo vypršelo"
+
+msgctxt "#30044"
+msgid "Login with Google"
+msgstr "Přihlásit přes Google"

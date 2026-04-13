@@ -182,3 +182,15 @@ msgstr ""
 msgctxt "#30041"
 msgid "Settings"
 msgstr ""
+
+msgctxt "#30042"
+msgid "Open in your browser and follow the instructions:"
+msgstr ""
+
+msgctxt "#30043"
+msgid "Login cancelled or timed out"
+msgstr ""
+
+msgctxt "#30044"
+msgid "Login with Google"
+msgstr ""
