@@ -1,3 +1,6 @@
+2.5.8
+- fix: xbmcgui.Window instead of xbmc.Window (crash on startup)
+
 2.5.7
 - fix: clean_title uses comprehensive regex instead of fragmented unicodedata checks
 - fix: live() cursor pagination uses parse_qs/urlencode (consistent with subcategories)
