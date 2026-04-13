@@ -507,7 +507,6 @@ class _QRLoginDialog(xbmcgui.WindowDialog):
         self.cancelled = False
         self._img_path = img_path
         self._url = url
-        self._auth_mod = None
         self._build_ui()
 
     def _build_ui(self):
@@ -536,19 +535,6 @@ class _QRLoginDialog(xbmcgui.WindowDialog):
         )
         self.addControl(hint)
 
-    def start_polling(self, auth_mod):
-        import threading
-        self._auth_mod = auth_mod
-        threading.Thread(target=self._poll, daemon=True).start()
-
-    def _poll(self):
-        for _ in range(300):
-            xbmc.sleep(1000)
-            if self._auth_mod and self._auth_mod.get_token():
-                self.close()
-                return
-        self.close()  # timeout
-
     def onAction(self, action):
         if action.getId() in (self.ACTION_BACK, self.ACTION_NAV_BACK, self.ACTION_ESCAPE):
             self.cancelled = True
@@ -557,59 +543,85 @@ class _QRLoginDialog(xbmcgui.WindowDialog):
 
 @plugin.route('/google_login')
 def google_login():
-    """Open a local browser page that guides the user through Google OAuth on kick.com."""
+    """KV relay auth: show QR → user opens kodi.zales.dev/connect/ID on phone → runs script on kick.com."""
     import os
+    import uuid
     from resources.lib import auth_server
 
-    port = auth_server.start()
-    lan_ip = auth_server.get_local_ip()
-    local_url = 'http://{}:{}'.format(lan_ip, port)
+    RELAY_BASE = 'https://kodi.zales.dev'
+    session_id = uuid.uuid4().hex
+    connect_url = '{}/connect/{}'.format(RELAY_BASE, session_id)
+    poll_url    = '{}/token/{}'.format(RELAY_BASE, session_id)
 
     # Try to open browser automatically (Kodi 20+)
     try:
-        xbmc.openBrowserWindow(local_url)
+        xbmc.openBrowserWindow(connect_url)
     except AttributeError:
         pass
 
-    # Fetch QR code image (needs internet)
+    # QR code image
     qr_path = None
     try:
-        qr_path = auth_server.get_qr_image(local_url)
+        qr_path = auth_server.get_qr_image(connect_url)
     except Exception:
         pass
 
     token = None
 
+    def _poll_relay(timeout_secs=300):
+        """Poll kodi.zales.dev/token/:id until token arrives or timeout."""
+        import requests as _req
+        for _ in range(timeout_secs):
+            xbmc.sleep(1000)
+            try:
+                r = _req.get(poll_url, timeout=5)
+                if r.status_code == 200:
+                    return r.json().get('token')
+            except Exception:
+                pass
+        return None
+
     if qr_path:
-        dlg = _QRLoginDialog(qr_path, local_url)
-        dlg.start_polling(auth_server)
+        dlg = _QRLoginDialog(qr_path, connect_url)
+
+        import threading
+        result_box = [None]
+
+        def _bg():
+            result_box[0] = _poll_relay()
+            dlg.close()
+
+        threading.Thread(target=_bg, daemon=True).start()
         dlg.doModal()
-        token = auth_server.get_token()
+        token = result_box[0]
         del dlg
         try:
             os.remove(qr_path)
         except Exception:
             pass
     else:
-        # Fallback: text progress dialog (no QR image available)
+        # Fallback: text progress dialog
         progress = xbmcgui.DialogProgress()
         msg = '{}\n[B]{}[/B]\n\n{}'.format(
-            str(language(30042)), local_url, str(language(30046)))
+            str(language(30042)), connect_url, str(language(30046)))
         progress.create('KICK.com — Google Login', msg)
         timeout_secs = 300
         elapsed = 0
         while elapsed < timeout_secs:
             if progress.iscanceled():
                 break
-            token = auth_server.get_token()
-            if token:
-                break
+            try:
+                import requests as _req
+                r = _req.get(poll_url, timeout=5)
+                if r.status_code == 200:
+                    token = r.json().get('token')
+                    break
+            except Exception:
+                pass
             xbmc.sleep(1000)
             elapsed += 1
             progress.update(int(elapsed / timeout_secs * 100), msg)
         progress.close()
-
-    auth_server.stop()
 
     if not token:
         xbmcgui.Dialog().notification(

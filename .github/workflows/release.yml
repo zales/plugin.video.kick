@@ -66,4 +66,6 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
         run: |
           npm install -g wrangler@4 --quiet
+          # Substitute KV namespace ID into wrangler.toml
+          sed -i "s|\$KV_AUTH_RELAY_ID|${{ secrets.CF_KV_AUTH_RELAY_ID }}|g" wrangler.toml
           npx wrangler deploy
