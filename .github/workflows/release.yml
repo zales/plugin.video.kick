@@ -17,15 +17,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Read addon version
+      - name: Set version from tag
         id: addon
         run: |
-          VERSION=$(python3 -c "
-          import xml.etree.ElementTree as ET
-          print(ET.parse('addon.xml').getroot().get('version'))
-          ")
+          VERSION="${GITHUB_REF_NAME#v}"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "zipname=plugin.video.kick-${VERSION}.zip" >> "$GITHUB_OUTPUT"
+          python3 -c "
+import xml.etree.ElementTree as ET
+ET.register_namespace('', '')
+tree = ET.parse('addon.xml')
+tree.getroot().set('version', '$VERSION')
+tree.write('addon.xml', encoding='unicode', xml_declaration=True)
+"
+          # Preserve standalone="yes" which ET strips
+          sed -i 's|<?xml version=.1.0. encoding=.unicode.?>|<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>|' addon.xml
 
       - name: Build addon zip
         run: |
