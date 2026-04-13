@@ -22,7 +22,7 @@
         <assets>
             <icon>icon.png</icon>
         </assets>
-        <news>v2.3.3 - removed login from settings and main menu, removed bundled cloudscraper</news>
+        <news>v2.4.0 - migrated to public Kick API + Cloudflare Worker proxy, fixes live channels and search</news>
     </extension>
 </addon>
 
