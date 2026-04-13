@@ -51,7 +51,7 @@ language = addon.getLocalizedString
 
 PATH          = addon.getAddonInfo('path')
 RESOURCES     = PATH + '/resources/'
-FANART        = RESOURCES + '../fanart.jpg'
+FANART        = ''
 ICON          = RESOURCES + '../icon.png'
 NEXT_PAGE_IMG = RESOURCES + 'right.png'
 askqual       = addon.getSetting('askqual')
@@ -158,7 +158,7 @@ def add_item(url, name, image, fanart=FANART, infoLabels=None,
     if IsPlayable:
         li.setProperty('IsPlayable', 'True')
     li.setInfo(type='video', infoLabels=infoLabels or {'title': name})
-    li.setArt({'thumb': image, 'poster': image, 'banner': image, 'fanart': fanart})
+    li.setArt({'thumb': image, 'poster': image, 'banner': image})
     if contextmenu:
         li.addContextMenuItems(contextmenu, replaceItems=True)
     xbmcplugin.addDirectoryItem(handle=plugin.handle, url=url, listitem=li, isFolder=folder)
