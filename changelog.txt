@@ -1,3 +1,8 @@
+2.4.4
+- chore: remove fanart background image
+- chore: fix log prefix KICKCOMMB -> KICK
+- chore: update addon.xml metadata, README, remove dead strings from all locales
+
 2.4.3
 - fix: remove duplicate 'add to favourites' — rely on Kodi built-in, removed custom implementation
 
