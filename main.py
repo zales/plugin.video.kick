@@ -68,11 +68,11 @@ def _api_get(url):
     """GET url, return parsed JSON dict/list or {} on error."""
     try:
         r = sessi.get(url, timeout=15)
-        xbmc.log('KICKCOMMB: GET {} → {}'.format(url[:120], r.status_code), xbmc.LOGINFO)
+        xbmc.log('KICK: GET {} → {}'.format(url[:120], r.status_code), xbmc.LOGINFO)
         r.raise_for_status()
         return r.json()
     except Exception as exc:
-        xbmc.log('KICKCOMMB: GET {} failed: {}'.format(url[:120], exc), xbmc.LOGERROR)
+        xbmc.log('KICK: GET {} failed: {}'.format(url[:120], exc), xbmc.LOGERROR)
         return {}
 
 
@@ -89,7 +89,7 @@ def _get_app_token():
         r.raise_for_status()
         _APP_TOKEN = r.json().get('token', '')
     except Exception as exc:
-        xbmc.log('KICKCOMMB: app-token failed: {}'.format(exc), xbmc.LOGERROR)
+        xbmc.log('KICK: app-token failed: {}'.format(exc), xbmc.LOGERROR)
     return _APP_TOKEN
 
 
@@ -100,11 +100,11 @@ def _pub_get(url):
         return {}
     try:
         r = sessi.get(url, timeout=15, headers={'Authorization': 'Bearer ' + token})
-        xbmc.log('KICKCOMMB: PUB {} → {}'.format(url[:120], r.status_code), xbmc.LOGINFO)
+        xbmc.log('KICK: PUB {} → {}'.format(url[:120], r.status_code), xbmc.LOGINFO)
         r.raise_for_status()
         return r.json()
     except Exception as exc:
-        xbmc.log('KICKCOMMB: PUB {} failed: {}'.format(url[:120], exc), xbmc.LOGERROR)
+        xbmc.log('KICK: PUB {} failed: {}'.format(url[:120], exc), xbmc.LOGERROR)
         return {}
 
 # ---------------------------------------------------------------------------
@@ -438,5 +438,5 @@ if __name__ == '__main__':
         plugin.run()
     except Exception as exc:
         import traceback
-        xbmc.log('KICKCOMMB: unhandled exception: ' + traceback.format_exc(), xbmc.LOGERROR)
+        xbmc.log('KICK: unhandled exception: ' + traceback.format_exc(), xbmc.LOGERROR)
         raise
