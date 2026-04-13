@@ -1,3 +1,7 @@
+2.5.3
+- fix: routing strip trailing slash (favourites from Kodi broke with /channel/slug/)
+- fix: remove custom add_favourite, rely on Kodi built-in (no more duplicates)
+
 2.5.2
 - fix: hide Kodi duplicate add-to-favourites (replaceItems=True)
 
