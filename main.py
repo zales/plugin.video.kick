@@ -73,6 +73,7 @@ def _api_get(url):
     """GET url, return parsed JSON dict/list or {} on error."""
     try:
         r = sessi.get(url, timeout=15)
+        xbmc.log('KICKCOMMB: GET {} → {}'.format(url[:120], r.status_code), xbmc.LOGINFO)
         r.raise_for_status()
         return r.json()
     except Exception as exc:
@@ -645,13 +646,22 @@ def list_followed():
     """List channels and categories the authenticated user follows."""
     lang_val = addon.getSetting('lang')
 
-    channels = _api_get(URL_FOLLOWED).get('channels') or []
+    raw = _api_get(URL_FOLLOWED)
+    # Internal API returns {"channels": [...]}, developer API might return {"data": [...]}
+    channels = raw.get('channels') or raw.get('data') or []
+    if not raw:
+        # Token may not be accepted by internal API — try developer API
+        dev_raw = _api_get('https://api.kick.com/public/v1/channels')
+        channels = dev_raw.get('data') or []
+        xbmc.log('KICKCOMMB: fell back to developer API for followed channels, got {} items'.format(len(channels)), xbmc.LOGWARNING)
     add_header(str(language(30015)))
     for x in channels:
-        is_live  = x.get('is_live')
+        # Internal API: channel_slug, user_username, profile_picture, is_live
+        # Developer API: slug, broadcaster_user_id, stream.is_live (different structure)
+        is_live  = x.get('is_live') or bool((x.get('stream') or {}).get('is_live'))
         pic      = x.get('profile_picture') or ICON
-        slug     = x.get('channel_slug', '')
-        username = x.get('user_username') or ''
+        slug     = x.get('channel_slug') or x.get('slug', '')
+        username = x.get('user_username') or x.get('slug') or ''
         title    = username + (LIVE_BADGE if is_live else '')
         add_item(plugin.url_for(list_channel, slug=slug), title, pic,
                  infoLabels={'title': title, 'plot': title},
