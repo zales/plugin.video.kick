@@ -1,3 +1,6 @@
+2.4.3
+- fix: remove duplicate 'add to favourites' — rely on Kodi built-in, removed custom implementation
+
 2.4.2
 - fix: favourites type changed from media to window so channel folders open correctly in Kodi
 

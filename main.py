@@ -1,6 +1,5 @@
 # -*- coding: UTF-8 -*-
 """Kodi plugin for kick.com."""
-import json
 import unicodedata
 from urllib.parse import quote, quote_plus
 
@@ -145,15 +144,6 @@ def title_with_viewers(title, viewers):
 
 
 
-def make_channel_menu(slug, name, img):
-    """Context menu with Kodi favourites add action."""
-    items = [
-        ('Pridat do oblibenych',
-         'RunPlugin({})'.format(plugin.url_for(add_favourite, slug=slug, name=name, img=img))),
-    ]
-    return items
-
-
 def add_header(text):
     """Non-clickable section label."""
     li = xbmcgui.ListItem(label=text)
@@ -258,7 +248,6 @@ def live():
         label     = '[B]{}[/B] {} [{}]'.format(slug, title_raw, viewers)
         add_item(plugin.url_for(list_channel, slug=slug), label, thumbnail,
                  infoLabels={'title': label, 'plot': label},
-                 contextmenu=make_channel_menu(slug, slug, pic),
                  folder=True)
     cursor = (jsdata.get('pagination') or {}).get('next_cursor')
     if cursor:
@@ -277,7 +266,6 @@ def list_channel(slug):
 
     pic         = ICON
     username    = ch.get('slug', slug)
-    contextmenu = make_channel_menu(slug, username, pic)
     stream      = ch.get('stream') or {}
 
     if stream.get('is_live'):
@@ -285,18 +273,18 @@ def list_channel(slug):
         title     = clean_title(ch.get('stream_title', '')) + LIVE_BADGE
         add_item(plugin.url_for(play_video, url=slug), title, thumbnail,
                  infoLabels={'title': title, 'plot': title},
-                 contextmenu=contextmenu, IsPlayable=True)
+                 IsPlayable=True)
 
     vods_label  = str(language(30024)) + username + '[/B]'
     clips_label = str(language(30025)) + username + '[/B]'
     add_item(plugin.url_for(list_vods, slug=slug),
              vods_label, pic,
              infoLabels={'title': vods_label, 'plot': vods_label},
-             contextmenu=contextmenu, folder=True)
+             folder=True)
     add_item(plugin.url_for(list_clips, slug=slug),
              clips_label, pic,
              infoLabels={'title': clips_label, 'plot': clips_label},
-             contextmenu=contextmenu, folder=True)
+             folder=True)
     _end_dir()
 
 
@@ -389,41 +377,6 @@ def _setup_inputstream(play_item, is_helper, hea):
     play_item.setMimeType('application/vnd.apple.mpegurl')
     play_item.setProperty('inputstream.adaptive.manifest_update_parameter', 'full')
     play_item.setProperty('inputstream.adaptive.manifest_headers', hea)
-
-
-@plugin.route('/add_favourite')
-def add_favourite():
-    """Add a channel to Kodi's built-in favourites list via JSON-RPC."""
-    slug = plugin.args.get('slug', '')
-    name = plugin.args.get('name', slug)
-    img  = plugin.args.get('img', ICON)
-    if not slug:
-        return
-    fav_url = plugin.url_for(list_channel, slug=slug)
-    result = xbmc.executeJSONRPC(json.dumps({
-        'jsonrpc': '2.0',
-        'method':  'Favourites.AddFavourite',
-        'params':  {
-            'title':           name,
-            'type':            'window',
-            'window':          'videos',
-            'windowparameter': fav_url,
-            'thumbnail':       img,
-        },
-        'id': 1,
-    }))
-    resp = json.loads(result)
-    if resp.get('result') == 'OK':
-        xbmcgui.Dialog().notification(
-            'KICK.com',
-            '{} pridano do oblibenych'.format(name),
-            xbmcgui.NOTIFICATION_INFO, 3000, False)
-    else:
-        xbmcgui.Dialog().notification(
-            'KICK.com',
-            'Chyba: {}'.format(resp.get('error', {}).get('message', 'neznama')),
-            xbmcgui.NOTIFICATION_ERROR, 4000, False)
-
 
 
 @plugin.route('/search')
