@@ -1,3 +1,6 @@
+2.6.1
+- fix: VOD playback broken - proxy returns 'source' field, not 'url'
+
 2.6.0
 - fix: live streams limit increased to 100 (API maximum, no cursor pagination)
 - fix: duplicate colon in language label ("Jazyk: : english" → "Jazyk: english")
