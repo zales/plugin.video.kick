@@ -1,3 +1,7 @@
+2.6.4
+- fix: call _end_dir() before return when channel not found (prevents Kodi loading freeze)
+- fix: localize InputStream Helper not installed message (#30046)
+
 2.6.3
 - fix: all notification messages localized via strings.po (no hardcoded Czech strings)
 - added strings #30042-30045 for cs_cz, en_gb, pl_pl
