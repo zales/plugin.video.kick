@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
-<addon id="plugin.video.kick" name="KICK.com" version="2.5.9" provider-name="zales">
+<addon id="plugin.video.kick" name="KICK.com" version="2.6.0" provider-name="zales">
     <requires>
         <import addon="xbmc.python" version="3.0.0" />
         <import addon="script.module.requests" version="2.31.0" />
@@ -22,7 +22,7 @@
         <assets>
             <icon>icon.png</icon>
         </assets>
-        <news>v2.5.9 - polish: strip whitespace from search query, minor cleanup</news>
+        <news>v2.6.0 - fix: live streams limit 100, fixed duplicate colon in language label</news>
     </extension>
 </addon>
 

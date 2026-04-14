@@ -1,3 +1,7 @@
+2.6.0
+- fix: live streams limit increased to 100 (API maximum, no cursor pagination)
+- fix: duplicate colon in language label ("Jazyk: : english" → "Jazyk: english")
+
 2.5.9
 - polish: strip whitespace from search query input
 - polish: rename internal variable for clarity
