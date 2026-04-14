@@ -359,8 +359,9 @@ def _resolve_stream(slug):
     if slug.endswith('.mp4') or slug.endswith('.m3u8'):
         return slug
     if slug.startswith(WORKER_BASE):
-        # Worker proxy for VOD: returns {"url": "..."}
-        return _api_get(slug).get('url')
+        # Worker proxy for VOD: returns {"source": "..."}
+        data = _api_get(slug)
+        return data.get('source') or data.get('url')
     if slug.startswith('http'):
         # Direct VOD / clip source URL
         data = _api_get(slug)
