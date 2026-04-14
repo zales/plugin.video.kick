@@ -69,3 +69,19 @@ msgstr "Dotázat se na kvalitu videa"
 msgctxt "#30041"
 msgid "Settings"
 msgstr "Nastavení"
+
+msgctxt "#30042"
+msgid "Channel not found: {}"
+msgstr "Kanál nenalezen: {}"
+
+msgctxt "#30043"
+msgid "No recordings available"
+msgstr "Žádné záznamy"
+
+msgctxt "#30044"
+msgid "No clips available"
+msgstr "Žádné clipy"
+
+msgctxt "#30045"
+msgid "Stream unavailable (offline or API error)"
+msgstr "Stream není dostupný (offline nebo API chyba)"

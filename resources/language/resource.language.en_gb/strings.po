@@ -69,3 +69,19 @@ msgstr ""
 msgctxt "#30041"
 msgid "Settings"
 msgstr ""
+
+msgctxt "#30042"
+msgid "Channel not found: {}"
+msgstr ""
+
+msgctxt "#30043"
+msgid "No recordings available"
+msgstr ""
+
+msgctxt "#30044"
+msgid "No clips available"
+msgstr ""
+
+msgctxt "#30045"
+msgid "Stream unavailable (offline or API error)"
+msgstr ""

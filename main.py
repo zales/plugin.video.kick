@@ -269,7 +269,7 @@ def list_channel(slug):
 
     if not ch:
         xbmcgui.Dialog().notification('KICK.com',
-            'Kanál nenalezen: {}'.format(slug),
+            str(language(30042)).format(slug),
             xbmcgui.NOTIFICATION_ERROR, 4000, False)
         return
 
@@ -316,7 +316,7 @@ def list_vods(slug):
                  infoLabels={'title': title, 'plot': title, 'duration': duration},
                  IsPlayable=True)
     if not vods:
-        xbmcgui.Dialog().notification('KICK.com', 'Žádné záznamy',
+        xbmcgui.Dialog().notification('KICK.com', str(language(30043)),
                                       xbmcgui.NOTIFICATION_INFO, 3000, False)
     _end_dir()
 
@@ -335,7 +335,7 @@ def list_clips(slug):
                  infoLabels={'title': title, 'plot': title, 'duration': duration},
                  IsPlayable=True)
     if not clips:
-        xbmcgui.Dialog().notification('KICK.com', 'Žádné clipy',
+        xbmcgui.Dialog().notification('KICK.com', str(language(30044)),
                                       xbmcgui.NOTIFICATION_INFO, 3000, False)
     _end_dir()
 
@@ -353,7 +353,7 @@ def play_video():
     stream = _resolve_stream(plugin.args.get('url', ''))
     if not stream:
         xbmcgui.Dialog().notification('KICK.com',
-            'Stream není dostupný (offline nebo API chyba)',
+            str(language(30045)),
             xbmcgui.NOTIFICATION_ERROR, 5000, False)
         xbmcplugin.setResolvedUrl(plugin.handle, False, listitem=xbmcgui.ListItem())
         return

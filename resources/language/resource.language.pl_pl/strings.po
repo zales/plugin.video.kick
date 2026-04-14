@@ -69,3 +69,19 @@ msgstr "Wybór jakości video"
 msgctxt "#30041"
 msgid "Settings"
 msgstr "Ustawienia"
+
+msgctxt "#30042"
+msgid "Channel not found: {}"
+msgstr "Kanał nie znaleziony: {}"
+
+msgctxt "#30043"
+msgid "No recordings available"
+msgstr "Brak nagrań"
+
+msgctxt "#30044"
+msgid "No clips available"
+msgstr "Brak klipów"
+
+msgctxt "#30045"
+msgid "Stream unavailable (offline or API error)"
+msgstr "Stream niedostępny (offline lub błąd API)"
