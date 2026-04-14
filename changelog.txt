@@ -1,3 +1,7 @@
+2.6.3
+- fix: all notification messages localized via strings.po (no hardcoded Czech strings)
+- added strings #30042-30045 for cs_cz, en_gb, pl_pl
+
 2.6.2
 - fix: show error notification when channel slug not found
 - fix: show info notification when VODs list is empty
