@@ -85,3 +85,7 @@ msgstr "Brak klipów"
 msgctxt "#30045"
 msgid "Stream unavailable (offline or API error)"
 msgstr "Stream niedostępny (offline lub błąd API)"
+
+msgctxt "#30046"
+msgid "InputStream Helper not installed"
+msgstr "InputStream Helper nie jest zainstalowany"

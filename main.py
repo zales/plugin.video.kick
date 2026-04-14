@@ -271,6 +271,7 @@ def list_channel(slug):
         xbmcgui.Dialog().notification('KICK.com',
             str(language(30042)).format(slug),
             xbmcgui.NOTIFICATION_ERROR, 4000, False)
+        _end_dir()
         return
 
     pic         = ch.get('profile_picture') or ICON
@@ -346,7 +347,7 @@ def play_video():
     try:
         import inputstreamhelper
     except ImportError:
-        xbmcgui.Dialog().notification('KICK.com', 'InputStream Helper not installed',
+        xbmcgui.Dialog().notification('KICK.com', str(language(30046)),
                                       xbmcgui.NOTIFICATION_ERROR, 5000)
         xbmcplugin.setResolvedUrl(plugin.handle, False, listitem=xbmcgui.ListItem())
         return

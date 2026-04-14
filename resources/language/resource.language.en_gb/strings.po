@@ -85,3 +85,7 @@ msgstr ""
 msgctxt "#30045"
 msgid "Stream unavailable (offline or API error)"
 msgstr ""
+
+msgctxt "#30046"
+msgid "InputStream Helper not installed"
+msgstr ""
