@@ -267,6 +267,12 @@ def list_channel(slug):
     jsdata = _pub_get(URL_PUB_CHANNEL + '?slug=' + quote(slug, safe=''))
     ch     = (jsdata.get('data') or [{}])[0]
 
+    if not ch:
+        xbmcgui.Dialog().notification('KICK.com',
+            'Kanál nenalezen: {}'.format(slug),
+            xbmcgui.NOTIFICATION_ERROR, 4000, False)
+        return
+
     pic         = ch.get('profile_picture') or ICON
     username    = ch.get('slug', slug)
     stream      = ch.get('stream') or {}
@@ -309,6 +315,9 @@ def list_vods(slug):
                  title, thumbnail,
                  infoLabels={'title': title, 'plot': title, 'duration': duration},
                  IsPlayable=True)
+    if not vods:
+        xbmcgui.Dialog().notification('KICK.com', 'Žádné záznamy',
+                                      xbmcgui.NOTIFICATION_INFO, 3000, False)
     _end_dir()
 
 
@@ -316,7 +325,8 @@ def list_vods(slug):
 def list_clips(slug):
     """List clips for the given channel slug via Worker proxy."""
     jsdata = _api_get(URL_PROXY_CLIPS.format(slug=quote(slug, safe='')))
-    for x in (jsdata.get('clips') or []):
+    clips = jsdata.get('clips') or []
+    for x in clips:
         title     = x.get('title', '')
         thumbnail = x.get('thumbnail_url') or ICON
         duration  = x.get('duration')
@@ -324,6 +334,9 @@ def list_clips(slug):
         add_item(plugin.url_for(play_video, url=href), title, thumbnail,
                  infoLabels={'title': title, 'plot': title, 'duration': duration},
                  IsPlayable=True)
+    if not clips:
+        xbmcgui.Dialog().notification('KICK.com', 'Žádné clipy',
+                                      xbmcgui.NOTIFICATION_INFO, 3000, False)
     _end_dir()
 
 
@@ -339,6 +352,9 @@ def play_video():
         return
     stream = _resolve_stream(plugin.args.get('url', ''))
     if not stream:
+        xbmcgui.Dialog().notification('KICK.com',
+            'Stream není dostupný (offline nebo API chyba)',
+            xbmcgui.NOTIFICATION_ERROR, 5000, False)
         xbmcplugin.setResolvedUrl(plugin.handle, False, listitem=xbmcgui.ListItem())
         return
     hdz = {

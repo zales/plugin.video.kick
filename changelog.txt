@@ -1,3 +1,9 @@
+2.6.2
+- fix: show error notification when channel slug not found
+- fix: show info notification when VODs list is empty
+- fix: show info notification when clips list is empty
+- fix: show error notification when stream is unavailable (offline / API error)
+
 2.6.1
 - fix: VOD playback broken - proxy returns 'source' field, not 'url'
 
