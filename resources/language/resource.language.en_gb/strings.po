@@ -89,3 +89,7 @@ msgstr ""
 msgctxt "#30046"
 msgid "InputStream Helper not installed"
 msgstr ""
+
+msgctxt "#30047"
+msgid "Content"
+msgstr ""

@@ -1,3 +1,9 @@
+2.6.5
+- feat: language picker moved to addon Settings (Content tab)
+- settings.xml upgraded to Kodi 19 format (version="2")
+- removed /language route and main menu language picker item
+- added string #30047 (Content) for settings category label
+
 2.6.4
 - fix: call _end_dir() before return when channel not found (prevents Kodi loading freeze)
 - fix: localize InputStream Helper not installed message (#30046)
