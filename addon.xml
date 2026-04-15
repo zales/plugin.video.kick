@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
-<addon id="plugin.video.kick" name="KICK.com" version="2.6.7" provider-name="zales">
+<addon id="plugin.video.kick" name="KICK.com" version="2.6.8" provider-name="zales">
     <requires>
         <import addon="xbmc.python" version="3.0.0" />
         <import addon="script.module.requests" version="2.31.0" />
@@ -22,7 +22,7 @@
         <assets>
             <icon>icon.png</icon>
         </assets>
-        <news>v2.6.7 - feat: followed channels with context menu follow/unfollow</news>
+        <news>v2.6.8 - fix: settings visibility, search LIVE badge + follow, followed channels live status</news>
     </extension>
 </addon>
 

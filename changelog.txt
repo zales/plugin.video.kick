@@ -1,3 +1,8 @@
+2.6.8
+- fix: settings items now visible in basic view (level=0)
+- fix: search results show LIVE badge, profile pic and follow/unfollow context menu
+- feat: followed channels list shows LIVE badge (one API call for all slugs)
+
 2.6.7
 - feat: followed channels - new home menu item "Followed channels"
 - feat: long press (context menu) on live channel to follow/unfollow
