@@ -122,6 +122,10 @@ msgctxt "#30057"
 msgid "All languages"
 msgstr ""
 
+msgctxt "#30058"
+msgid "Chat overlay"
+msgstr "Chat overlay"
+
 msgctxt "#30060"
 msgid "Afrikaans"
 msgstr ""

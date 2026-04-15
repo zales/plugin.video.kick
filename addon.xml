@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
-<addon id="plugin.video.kick" name="KICK.com" version="2.6.12" provider-name="zales">
+<addon id="plugin.video.kick" name="KICK.com" version="2.7.0" provider-name="zales">
     <requires>
         <import addon="xbmc.python" version="3.0.0" />
         <import addon="script.module.requests" version="2.31.0" />
@@ -22,7 +22,7 @@
         <assets>
             <icon>icon.png</icon>
         </assets>
-        <news>v2.6.12 - fix: settings visible, lang spinner works, translations fixed, lang applied immediately</news>
+        <news>v2.7.0 - feat: live chat overlay (SRT subtitles, toggle in settings), per-IP rate limiting on worker proxy</news>
     </extension>
 </addon>
 

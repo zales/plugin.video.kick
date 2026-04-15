@@ -63,6 +63,12 @@
                     <control type="toggle"/>
                 </setting>
 
+                <setting id="chat" type="boolean" label="30058">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+
             </group>
         </category>
     </section>

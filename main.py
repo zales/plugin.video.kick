@@ -416,7 +416,8 @@ def play_video():
                                       xbmcgui.NOTIFICATION_ERROR, 5000)
         xbmcplugin.setResolvedUrl(plugin.handle, False, listitem=xbmcgui.ListItem())
         return
-    stream = _resolve_stream(plugin.args.get('url', ''))
+    raw_url = plugin.args.get('url', '')
+    stream = _resolve_stream(raw_url)
     if not stream:
         xbmcgui.Dialog().notification('KICK.com',
             str(language(30045)),
@@ -434,6 +435,14 @@ def play_video():
     play_item = xbmcgui.ListItem(path=stream + '|' + hea)
     _setup_inputstream(play_item, is_helper, hea)
     xbmcplugin.setResolvedUrl(plugin.handle, True, listitem=play_item)
+
+    # Chat overlay — only for live channel slugs (not VOD/clip URLs)
+    is_live = raw_url and not raw_url.startswith('http') and \
+              not raw_url.endswith('.mp4') and not raw_url.endswith('.m3u8')
+    if is_live and addon.getSetting('chat') == 'true':
+        from resources.lib.chat import ChatOverlay
+        ChatOverlay(raw_url, _api_get, PROFILE, WORKER_BASE,
+                    URL_PROXY_CHANNEL).start()
 
 
 def _resolve_stream(slug):
