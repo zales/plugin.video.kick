@@ -117,23 +117,6 @@ def _pub_get(url):
 # ---------------------------------------------------------------------------
 LIVE_BADGE = ' · [B][COLOR yellowgreen]LIVE[/COLOR][/B]'
 
-LANGUAGES = [
-    ('af',  'afrikaans'),    ('sq',  'albanian'),    ('ar',  'arabic'),
-    ('bn',  'bangla'),       ('bg',  'bulgarian'),   ('ca',  'catalan'),
-    ('zh',  'chinese'),      ('cs',  'czech'),       ('nl',  'dutch'),
-    ('en',  'english'),      ('fil', 'filipino'),    ('fi',  'finnish'),
-    ('fr',  'french'),       ('ka',  'georgian'),    ('de',  'german'),
-    ('el',  'greek'),        ('he',  'hebrew'),      ('hi',  'hindi'),
-    ('hu',  'hungarian'),    ('id',  'indonesian'),  ('it',  'italian'),
-    ('ja',  'japanese'),     ('ko',  'korean'),      ('la',  'latin'),
-    ('mn',  'mongolian'),    ('fa',  'persian'),     ('pl',  'polish'),
-    ('pt',  'portuguese'),   ('ro',  'romanian'),    ('ru',  'russian'),
-    ('sr',  'serbian'),      ('sk',  'slovak'),      ('es',  'spanish'),
-    ('sv',  'swedish'),      ('th',  'thai'),        ('tr',  'turkish'),
-    ('uk',  'ukrainian'),    ('ur',  'urdu'),        ('vi',  'vietnamese'),
-    ('yo',  'yoruba'),       ('zu',  'zulu'),
-]
-
 
 # Emoji / symbol characters to strip from stream titles
 _RE_STRIP = re.compile(
