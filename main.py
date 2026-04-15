@@ -232,19 +232,39 @@ def list_subcategories():
 
 @plugin.route('/followed')
 def list_followed():
-    """List channels the user is following."""
+    """List channels the user is following, with live status."""
     followed = _load_followed()
-    for slug, info in followed.items():
-        name = info.get('name', slug)
-        pic  = info.get('pic', ICON)
-        ctx  = [(str(language(30050)),
-                 'RunPlugin({})'.format(plugin.url_for(toggle_follow, slug=slug)))]
-        add_item(plugin.url_for(list_channel, slug=slug), name, pic,
-                 infoLabels={'title': name, 'plot': name},
-                 folder=True, context_items=ctx)
     if not followed:
         xbmcgui.Dialog().notification('KICK.com', str(language(30053)),
                                       xbmcgui.NOTIFICATION_INFO, 3000, False)
+        _end_dir()
+        return
+
+    # Fetch live status for all followed slugs in one API call
+    slugs_qs = '&'.join('slug=' + quote(s, safe='') for s in followed)
+    live_data = _pub_get(URL_PUB_CHANNEL + '?' + slugs_qs)
+    live_map  = {}
+    for ch in (live_data.get('data') or []):
+        s = ch.get('slug', '')
+        stream = ch.get('stream') or {}
+        live_map[s] = {
+            'is_live':   stream.get('is_live', False),
+            'thumbnail': stream.get('thumbnail'),
+            'pic':       ch.get('profile_picture'),
+        }
+
+    for slug, info in followed.items():
+        name    = info.get('name', slug)
+        lm      = live_map.get(slug, {})
+        is_live = lm.get('is_live', False)
+        pic     = lm.get('pic') or info.get('pic', ICON)
+        thumb   = (lm.get('thumbnail') or pic) if is_live else pic
+        label   = name + (LIVE_BADGE if is_live else '')
+        ctx = [(str(language(30050)),
+                'RunPlugin({})'.format(plugin.url_for(toggle_follow, slug=slug)))]
+        add_item(plugin.url_for(list_channel, slug=slug), label, thumb,
+                 infoLabels={'title': label, 'plot': label},
+                 icon=pic, folder=True, context_items=ctx)
     _end_dir()
 
 
