@@ -5,6 +5,7 @@
         <category id="content" label="30047">
             <group id="1">
                 <setting id="lang" type="string" label="30014">
+                    <level>0</level>
                     <default>en</default>
                     <constraints>
                         <options>
@@ -58,6 +59,7 @@
         <category id="playback" label="30039">
             <group id="1">
                 <setting id="askqual" type="boolean" label="30040">
+                    <level>0</level>
                     <default>false</default>
                 </setting>
             </group>
