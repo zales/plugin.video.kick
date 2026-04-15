@@ -83,9 +83,31 @@ export default {
 
     if (key && !key.endsWith('/')) {
       const rangeHeader = request.headers.get('Range');
-      // Pass the full Request object so R2 can parse the Range header correctly.
-      // Never pass request.headers — R2 expects R2Range | Request, not Headers.
-      const obj = await env.BUCKET.get(key, rangeHeader ? { range: request } : undefined);
+
+      // Parse Range header manually — R2's { range: request } crashes on open-ended
+      // ranges like "bytes=0-" which Kodi always sends during addon installs.
+      let r2range;
+      let isRange = false;
+      if (rangeHeader) {
+        const m = rangeHeader.match(/^bytes=(\d+)-(\d*)$/);
+        if (m) {
+          const offset = parseInt(m[1], 10);
+          const end = m[2] ? parseInt(m[2], 10) : undefined;
+          // "bytes=0-" with no end means full file — treat as normal GET
+          if (end === undefined && offset === 0) {
+            r2range = undefined;
+            isRange = false;
+          } else if (end !== undefined) {
+            r2range = { offset, length: end - offset + 1 };
+            isRange = true;
+          } else {
+            r2range = { offset };
+            isRange = true;
+          }
+        }
+      }
+
+      const obj = await env.BUCKET.get(key, r2range ? { range: r2range } : undefined);
       if (!obj) return new Response('Not Found', { status: 404 });
       const headers = new Headers();
       const ext = key.split('.').pop().toLowerCase();
@@ -93,9 +115,7 @@ export default {
       headers.set('Content-Type', mimeTypes[ext] || obj.httpMetadata?.contentType || 'application/octet-stream');
       headers.set('Cache-Control', (ext === 'zip' || ext === 'xml' || ext === 'md5') ? 'no-cache' : 'public, max-age=300');
       headers.set('Accept-Ranges', 'bytes');
-      // Only return 206 when the client actually sent a Range header.
-      // Returning 206 for full-content requests breaks Kodi's addon installer.
-      if (rangeHeader && obj.range) {
+      if (isRange && obj.range) {
         const { offset, length } = obj.range;
         headers.set('Content-Range', 'bytes ' + offset + '-' + (offset + length - 1) + '/' + obj.size);
         headers.set('Content-Length', String(length));
