@@ -91,7 +91,7 @@ export default {
       const ext = key.split('.').pop().toLowerCase();
       const mimeTypes = { xml:'application/xml', md5:'text/plain', zip:'application/zip', png:'image/png', jpg:'image/jpeg', jpeg:'image/jpeg' };
       headers.set('Content-Type', mimeTypes[ext] || obj.httpMetadata?.contentType || 'application/octet-stream');
-      headers.set('Cache-Control', ext === 'zip' ? 'no-cache' : 'public, max-age=300');
+      headers.set('Cache-Control', (ext === 'zip' || ext === 'xml' || ext === 'md5') ? 'no-cache' : 'public, max-age=300');
       headers.set('Accept-Ranges', 'bytes');
       // Only return 206 when the client actually sent a Range header.
       // Returning 206 for full-content requests breaks Kodi's addon installer.
