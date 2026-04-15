@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addons>
+    <addon id="plugin.video.kick" name="KICK.com" version="2.6.10" provider-name="zales">
+        <requires>
+            <import addon="xbmc.python" version="3.0.0" />
+            <import addon="script.module.requests" version="2.31.0" />
+            <import addon="script.module.inputstreamhelper" version="0.8.5" optional="true" />
+        </requires>
+        <extension point="xbmc.python.pluginsource" library="main.py">
+            <provides>video</provides>
+        </extension>
+        <extension point="xbmc.addon.metadata">
+            <summary lang="en">Watch live streams, VODs and clips from kick.com</summary>
+            <description lang="en">Browse live channels by language and category, channel pages with VODs and clips, search, and HLS playback via InputStream Adaptive. Uses a Cloudflare Worker proxy to bypass Kick WAF.</description>
+            <disclaimer lang="en">This addon is not affiliated with kick.com.</disclaimer>
+            <language>en</language>
+            <platform>all</platform>
+            <license>GNU GENERAL PUBLIC LICENSE Version 2, June 1991</license>
+            <website>https://github.com/zales/plugin.video.kick</website>
+            <source>https://github.com/zales/plugin.video.kick</source>
+            <assets>
+                <icon>icon.png</icon>
+            </assets>
+            <news>v2.6.10 - fix: xbmc.python dependency corrected to 3.0.0 (was invalid 3.1.0)</news>
+        </extension>
+    </addon>
+    <addon id="repository.zales.kick" name="KICK.com Repository" version="1.0.0" provider-name="zales">
+        <requires>
+            <import addon="xbmc.addon" version="21.0.0" />
+        </requires>
+        <extension point="xbmc.addon.repository" name="KICK.com Repository">
+            <dir minversion="19.0.0">
+                <info compressed="false">https://kodi.zales.dev/addons.xml</info>
+                <checksum>https://kodi.zales.dev/addons.xml.md5</checksum>
+                <datadir zip="true">https://kodi.zales.dev</datadir>
+            </dir>
+        </extension>
+        <extension point="xbmc.addon.metadata">
+            <summary lang="en">KICK.com Kodi Repository</summary>
+            <description lang="en">Repository for the KICK.com Kodi add-on by zales.</description>
+            <disclaimer lang="en">This repository is not affiliated with kick.com.</disclaimer>
+            <platform>all</platform>
+            <license>GNU GENERAL PUBLIC LICENSE Version 2, June 1991</license>
+            <website>https://github.com/zales/plugin.video.kick</website>
+            <news>Initial release</news>
+        </extension>
+    </addon>
+</addons>

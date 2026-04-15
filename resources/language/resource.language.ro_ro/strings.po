@@ -107,7 +107,7 @@ msgid "No followed channels"
 msgstr "Nicio canal urmărit"
 
 msgctxt "#30054"
-msgid "Stream quality"
+msgid "Ask stream quality"
 msgstr "Calitate stream"
 
 msgctxt "#30055"
@@ -117,3 +117,7 @@ msgstr "Automat"
 msgctxt "#30056"
 msgid "Ask every time"
 msgstr "Întreabă mereu"
+
+msgctxt "#30057"
+msgid "All languages"
+msgstr ""

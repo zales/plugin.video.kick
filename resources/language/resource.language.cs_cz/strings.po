@@ -117,7 +117,7 @@ msgid "No followed channels"
 msgstr "Žádné sledované kanály"
 
 msgctxt "#30054"
-msgid "Stream quality"
+msgid "Ask stream quality"
 msgstr "Kvalita streamu"
 
 msgctxt "#30055"
@@ -127,3 +127,7 @@ msgstr "Automaticky"
 msgctxt "#30056"
 msgid "Ask every time"
 msgstr "Vybrat vždy"
+
+msgctxt "#30057"
+msgid "All languages"
+msgstr ""

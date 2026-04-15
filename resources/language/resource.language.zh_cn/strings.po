@@ -107,7 +107,7 @@ msgid "No followed channels"
 msgstr "没有关注的频道"
 
 msgctxt "#30054"
-msgid "Stream quality"
+msgid "Ask stream quality"
 msgstr "串流质量"
 
 msgctxt "#30055"
@@ -117,3 +117,7 @@ msgstr "自动"
 msgctxt "#30056"
 msgid "Ask every time"
 msgstr "每次询问"
+
+msgctxt "#30057"
+msgid "All languages"
+msgstr ""

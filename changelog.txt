@@ -1,3 +1,9 @@
+2.6.11
+- fix: settings now visible - proper section/category/group structure required by Kodi 19+
+- feat: language filter has "All languages" option (default), shows all streams
+- feat: stream quality changed from dropdown to toggle (off=automatic, on=ask every time)
+- strings #30054 updated, #30057 (All languages) added to all 32 language files
+
 2.6.10
 - fix: xbmc.python dependency corrected to 3.0.0 (3.1.0 does not exist, caused install failure)
 

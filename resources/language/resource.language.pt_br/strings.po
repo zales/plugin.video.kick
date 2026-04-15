@@ -107,7 +107,7 @@ msgid "No followed channels"
 msgstr "Sem canais seguidos"
 
 msgctxt "#30054"
-msgid "Stream quality"
+msgid "Ask stream quality"
 msgstr "Qualidade do stream"
 
 msgctxt "#30055"
@@ -117,3 +117,7 @@ msgstr "Automático"
 msgctxt "#30056"
 msgid "Ask every time"
 msgstr "Perguntar sempre"
+
+msgctxt "#30057"
+msgid "All languages"
+msgstr ""

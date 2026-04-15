@@ -192,11 +192,15 @@ def _end_dir():
 @plugin.route('/')
 def home():
     """Main menu: followed, live, categories, search, settings."""
-    lang_val = addon.getSetting('lang') or 'en'
+    lang_val = addon.getSetting('lang') or 'all'
+    if lang_val == 'all':
+        live_url = URL_PUB_LIVESTREAMS + '?limit=100'
+    else:
+        live_url = URL_PUB_LIVESTREAMS + '?language={}&limit=100'.format(lang_val)
 
     add_item(plugin.url_for(list_followed),
              str(language(30048)), ICON, folder=True)
-    add_item(plugin.url_for(live, url=URL_PUB_LIVESTREAMS + '?language={}&limit=100'.format(lang_val)),
+    add_item(plugin.url_for(live, url=live_url),
              str(language(30003)), ICON, folder=True)
     add_item(plugin.url_for(list_subcategories, url=URL_PUB_V2_CATS + '?limit=50'),
              str(language(30004)), ICON, folder=True)
@@ -448,10 +452,12 @@ def _resolve_stream(slug):
 
 def _setup_inputstream(play_item, is_helper, hea):
     """Configure InputStream Adaptive properties on a ListItem."""
-    quality = addon.getSetting('quality') or 'ask'
+    quality = addon.getSetting('quality')
+    # quality is now a boolean toggle: 'true' = ask every time, 'false' = automatic
+    ask_quality = (quality == 'true')
     play_item.setProperty('IsPlayable', 'true')
     play_item.setProperty('inputstream', is_helper.inputstream_addon)
-    if quality == 'ask':
+    if ask_quality:
         play_item.setProperty('inputstream.adaptive.stream_selection_type', 'ask-quality')
     play_item.setProperty('inputstream.adaptive.manifest_type', 'hls')
     play_item.setMimeType('application/vnd.apple.mpegurl')
