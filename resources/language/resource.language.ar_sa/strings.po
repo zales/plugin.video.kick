@@ -81,3 +81,27 @@ msgstr "InputStream Helper غير مثبت"
 msgctxt "#30047"
 msgid "Content"
 msgstr "المحتوى"
+
+msgctxt "#30048"
+msgid "Followed channels"
+msgstr "القنوات المتابعة"
+
+msgctxt "#30049"
+msgid "Follow"
+msgstr "تابع"
+
+msgctxt "#30050"
+msgid "Unfollow"
+msgstr "إلغاء المتابعة"
+
+msgctxt "#30051"
+msgid "Added to followed"
+msgstr "تمت الإضافة إلى المتابعة"
+
+msgctxt "#30052"
+msgid "Removed from followed"
+msgstr "تمت الإزالة من المتابعة"
+
+msgctxt "#30053"
+msgid "No followed channels"
+msgstr "لا توجد قنوات متابعة"

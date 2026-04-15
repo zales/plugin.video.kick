@@ -81,3 +81,27 @@ msgstr "Το InputStream Helper δεν είναι εγκατεστημένο"
 msgctxt "#30047"
 msgid "Content"
 msgstr "Περιεχόμενο"
+
+msgctxt "#30048"
+msgid "Followed channels"
+msgstr "Παρακολουθούμενα κανάλια"
+
+msgctxt "#30049"
+msgid "Follow"
+msgstr "Παρακολούθηση"
+
+msgctxt "#30050"
+msgid "Unfollow"
+msgstr "Διακοπή παρακολούθησης"
+
+msgctxt "#30051"
+msgid "Added to followed"
+msgstr "Προστέθηκε στα παρακολουθούμενα"
+
+msgctxt "#30052"
+msgid "Removed from followed"
+msgstr "Αφαιρέθηκε από τα παρακολουθούμενα"
+
+msgctxt "#30053"
+msgid "No followed channels"
+msgstr "Δεν υπάρχουν παρακολουθούμενα κανάλια"

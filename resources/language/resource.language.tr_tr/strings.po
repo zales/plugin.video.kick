@@ -81,3 +81,27 @@ msgstr "InputStream Helper kurulu değil"
 msgctxt "#30047"
 msgid "Content"
 msgstr "İçerik"
+
+msgctxt "#30048"
+msgid "Followed channels"
+msgstr "Takip edilen kanallar"
+
+msgctxt "#30049"
+msgid "Follow"
+msgstr "Takip et"
+
+msgctxt "#30050"
+msgid "Unfollow"
+msgstr "Takibi bırak"
+
+msgctxt "#30051"
+msgid "Added to followed"
+msgstr "Takip edilenlere eklendi"
+
+msgctxt "#30052"
+msgid "Removed from followed"
+msgstr "Takip edilenlerden kaldırıldı"
+
+msgctxt "#30053"
+msgid "No followed channels"
+msgstr "Takip edilen kanal yok"

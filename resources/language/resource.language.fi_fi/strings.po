@@ -81,3 +81,27 @@ msgstr "InputStream Helper ei ole asennettu"
 msgctxt "#30047"
 msgid "Content"
 msgstr "Sisältö"
+
+msgctxt "#30048"
+msgid "Followed channels"
+msgstr "Seuratut kanavat"
+
+msgctxt "#30049"
+msgid "Follow"
+msgstr "Seuraa"
+
+msgctxt "#30050"
+msgid "Unfollow"
+msgstr "Lopeta seuraaminen"
+
+msgctxt "#30051"
+msgid "Added to followed"
+msgstr "Lisätty seurattuihin"
+
+msgctxt "#30052"
+msgid "Removed from followed"
+msgstr "Poistettu seuratusta"
+
+msgctxt "#30053"
+msgid "No followed channels"
+msgstr "Ei seurattuja kanavia"

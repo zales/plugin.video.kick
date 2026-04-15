@@ -1,3 +1,9 @@
+2.6.7
+- feat: followed channels - new home menu item "Followed channels"
+- feat: long press (context menu) on live channel to follow/unfollow
+- stored in addon profile as followed.json, persists across sessions
+- strings #30048-30053 added to all 32 language files
+
 2.6.6
 - feat: translations added for 29 languages (de, fr, es, it, pt_pt, pt_br, nl, ru, tr, ja, ko,
   zh_cn, ar, hu, ro, sk, bg, uk, sv, fi, el, id, vi, th, he, fa, hi, sr, ca)

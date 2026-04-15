@@ -81,3 +81,27 @@ msgstr "InputStream Helper nicht installiert"
 msgctxt "#30047"
 msgid "Content"
 msgstr "Inhalt"
+
+msgctxt "#30048"
+msgid "Followed channels"
+msgstr "Verfolgte Kanäle"
+
+msgctxt "#30049"
+msgid "Follow"
+msgstr "Kanal folgen"
+
+msgctxt "#30050"
+msgid "Unfollow"
+msgstr "Kanal entfolgen"
+
+msgctxt "#30051"
+msgid "Added to followed"
+msgstr "Zu Verfolgten hinzugefügt"
+
+msgctxt "#30052"
+msgid "Removed from followed"
+msgstr "Aus Verfolgten entfernt"
+
+msgctxt "#30053"
+msgid "No followed channels"
+msgstr "Keine verfolgten Kanäle"

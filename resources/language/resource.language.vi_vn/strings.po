@@ -81,3 +81,27 @@ msgstr "InputStream Helper chưa được cài đặt"
 msgctxt "#30047"
 msgid "Content"
 msgstr "Nội dung"
+
+msgctxt "#30048"
+msgid "Followed channels"
+msgstr "Kênh đang theo dõi"
+
+msgctxt "#30049"
+msgid "Follow"
+msgstr "Theo dõi"
+
+msgctxt "#30050"
+msgid "Unfollow"
+msgstr "Bỏ theo dõi"
+
+msgctxt "#30051"
+msgid "Added to followed"
+msgstr "Đã thêm vào theo dõi"
+
+msgctxt "#30052"
+msgid "Removed from followed"
+msgstr "Đã xóa khỏi theo dõi"
+
+msgctxt "#30053"
+msgid "No followed channels"
+msgstr "Không có kênh theo dõi"

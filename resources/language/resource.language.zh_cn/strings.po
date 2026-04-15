@@ -81,3 +81,27 @@ msgstr "InputStream Helper 未安装"
 msgctxt "#30047"
 msgid "Content"
 msgstr "内容"
+
+msgctxt "#30048"
+msgid "Followed channels"
+msgstr "关注的频道"
+
+msgctxt "#30049"
+msgid "Follow"
+msgstr "关注"
+
+msgctxt "#30050"
+msgid "Unfollow"
+msgstr "取消关注"
+
+msgctxt "#30051"
+msgid "Added to followed"
+msgstr "已添加到关注"
+
+msgctxt "#30052"
+msgid "Removed from followed"
+msgstr "已从关注中移除"
+
+msgctxt "#30053"
+msgid "No followed channels"
+msgstr "没有关注的频道"

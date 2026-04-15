@@ -81,3 +81,27 @@ msgstr "InputStream Helper نصب نشده است"
 msgctxt "#30047"
 msgid "Content"
 msgstr "محتوا"
+
+msgctxt "#30048"
+msgid "Followed channels"
+msgstr "کانال‌های دنبال‌شده"
+
+msgctxt "#30049"
+msgid "Follow"
+msgstr "دنبال کردن"
+
+msgctxt "#30050"
+msgid "Unfollow"
+msgstr "لغو دنبال کردن"
+
+msgctxt "#30051"
+msgid "Added to followed"
+msgstr "به دنبال‌شده‌ها اضافه شد"
+
+msgctxt "#30052"
+msgid "Removed from followed"
+msgstr "از دنبال‌شده‌ها حذف شد"
+
+msgctxt "#30053"
+msgid "No followed channels"
+msgstr "هیچ کانال دنبال‌شده‌ای وجود ندارد"

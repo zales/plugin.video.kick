@@ -81,3 +81,27 @@ msgstr "InputStream Helper가 설치되지 않음"
 msgctxt "#30047"
 msgid "Content"
 msgstr "콘텐츠"
+
+msgctxt "#30048"
+msgid "Followed channels"
+msgstr "팔로우 채널"
+
+msgctxt "#30049"
+msgid "Follow"
+msgstr "팔로우"
+
+msgctxt "#30050"
+msgid "Unfollow"
+msgstr "언팔로우"
+
+msgctxt "#30051"
+msgid "Added to followed"
+msgstr "팔로우에 추가됨"
+
+msgctxt "#30052"
+msgid "Removed from followed"
+msgstr "팔로우에서 제거됨"
+
+msgctxt "#30053"
+msgid "No followed channels"
+msgstr "팔로우 중인 채널 없음"

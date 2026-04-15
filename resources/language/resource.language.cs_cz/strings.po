@@ -92,3 +92,26 @@ msgstr "InputStream Helper není nainstalovan"
 msgctxt "#30047"
 msgid "Content"
 msgstr "Obsah"
+msgctxt "#30048"
+msgid "Followed channels"
+msgstr "Sledované kanály"
+
+msgctxt "#30049"
+msgid "Follow"
+msgstr "Sledovat"
+
+msgctxt "#30050"
+msgid "Unfollow"
+msgstr "Přestat sledovat"
+
+msgctxt "#30051"
+msgid "Added to followed"
+msgstr "Přidáno do sledovaných"
+
+msgctxt "#30052"
+msgid "Removed from followed"
+msgstr "Odebráno ze sledovaných"
+
+msgctxt "#30053"
+msgid "No followed channels"
+msgstr "Žádné sledované kanály"

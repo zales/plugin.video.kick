@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 """Kodi plugin for kick.com."""
+import json
 import re
 import traceback
 from urllib.parse import quote, quote_plus, parse_qs, urlencode, urlparse
@@ -8,6 +9,7 @@ import requests
 import xbmcgui
 import xbmcplugin
 import xbmcaddon
+import xbmcvfs
 import xbmc
 
 from resources.lib.routing import Plugin
@@ -50,6 +52,8 @@ PATH          = addon.getAddonInfo('path')
 RESOURCES     = PATH + '/resources/'
 ICON          = RESOURCES + '../icon.png'
 NEXT_PAGE_IMG = RESOURCES + 'right.png'
+PROFILE       = xbmcvfs.translatePath(addon.getAddonInfo('profile'))
+FOLLOWED_FILE = PROFILE + 'followed.json'
 
 # ---------------------------------------------------------------------------
 # Session
@@ -137,7 +141,28 @@ def clean_title(s):
     return _RE_STRIP.sub('', (s or '').replace('\n', ' ')).strip()
 
 
-def add_item(url, name, image, infoLabels=None, IsPlayable=False, folder=False, icon=None):
+def _load_followed():
+    """Return the followed channels dict from disk, or {} on error."""
+    try:
+        if xbmcvfs.exists(FOLLOWED_FILE):
+            with xbmcvfs.File(FOLLOWED_FILE) as f:
+                return json.loads(f.read()) or {}
+    except Exception as exc:
+        xbmc.log('KICK: load_followed failed: {}'.format(exc), xbmc.LOGERROR)
+    return {}
+
+
+def _save_followed(data):
+    """Persist the followed channels dict to disk."""
+    try:
+        xbmcvfs.mkdirs(PROFILE)
+        with xbmcvfs.File(FOLLOWED_FILE, 'w') as f:
+            f.write(json.dumps(data))
+    except Exception as exc:
+        xbmc.log('KICK: save_followed failed: {}'.format(exc), xbmc.LOGERROR)
+
+
+def add_item(url, name, image, infoLabels=None, IsPlayable=False, folder=False, icon=None, context_items=None):
     """Create a ListItem and add it to the current directory listing."""
     li  = xbmcgui.ListItem(label=name)
     if IsPlayable:
@@ -149,6 +174,8 @@ def add_item(url, name, image, infoLabels=None, IsPlayable=False, folder=False, 
     tag.setPlot(info.get('plot', ''))
     if 'duration' in info:
         tag.setDuration(int(info['duration'] or 0))
+    if context_items:
+        li.addContextMenuItems(context_items)
     xbmcplugin.addDirectoryItem(handle=plugin.handle, url=url, listitem=li, isFolder=folder)
 
 
@@ -164,9 +191,11 @@ def _end_dir():
 # ---------------------------------------------------------------------------
 @plugin.route('/')
 def home():
-    """Main menu: live, categories, search, settings."""
+    """Main menu: followed, live, categories, search, settings."""
     lang_val = addon.getSetting('lang') or 'en'
 
+    add_item(plugin.url_for(list_followed),
+             str(language(30048)), ICON, folder=True)
     add_item(plugin.url_for(live, url=URL_PUB_LIVESTREAMS + '?language={}&limit=100'.format(lang_val)),
              str(language(30003)), ICON, folder=True)
     add_item(plugin.url_for(list_subcategories, url=URL_PUB_V2_CATS + '?limit=50'),
@@ -201,11 +230,49 @@ def list_subcategories():
     _end_dir()
 
 
+@plugin.route('/followed')
+def list_followed():
+    """List channels the user is following."""
+    followed = _load_followed()
+    for slug, info in followed.items():
+        name = info.get('name', slug)
+        pic  = info.get('pic', ICON)
+        ctx  = [(str(language(30050)),
+                 'RunPlugin({})'.format(plugin.url_for(toggle_follow, slug=slug)))]
+        add_item(plugin.url_for(list_channel, slug=slug), name, pic,
+                 infoLabels={'title': name, 'plot': name},
+                 folder=True, context_items=ctx)
+    if not followed:
+        xbmcgui.Dialog().notification('KICK.com', str(language(30053)),
+                                      xbmcgui.NOTIFICATION_INFO, 3000, False)
+    _end_dir()
+
+
+@plugin.route('/follow/<slug>')
+def toggle_follow(slug):
+    """Toggle follow state for a channel slug."""
+    followed = _load_followed()
+    if slug in followed:
+        del followed[slug]
+        _save_followed(followed)
+        xbmcgui.Dialog().notification('KICK.com', str(language(30052)),
+                                      xbmcgui.NOTIFICATION_INFO, 2000, False)
+    else:
+        name = plugin.args.get('name', slug)
+        pic  = plugin.args.get('pic', ICON)
+        followed[slug] = {'slug': slug, 'name': name, 'pic': pic}
+        _save_followed(followed)
+        xbmcgui.Dialog().notification('KICK.com', str(language(30051)),
+                                      xbmcgui.NOTIFICATION_INFO, 2000, False)
+    xbmc.executebuiltin('Container.Refresh')
+
+
 @plugin.route('/live')
 def live():
     """List currently live streams (public API)."""
-    url    = plugin.args.get('url', URL_PUB_LIVESTREAMS + '?limit=100')
-    jsdata = _pub_get(url)
+    url      = plugin.args.get('url', URL_PUB_LIVESTREAMS + '?limit=100')
+    jsdata   = _pub_get(url)
+    followed = _load_followed()
     for x in (jsdata.get('data') or []):
         title_raw = clean_title(x.get('stream_title', ''))
         viewers   = x.get('viewer_count', 0)
@@ -213,9 +280,12 @@ def live():
         slug      = x.get('slug', '')
         pic       = x.get('profile_picture') or ICON
         label     = '[B]{}[/B] {} [{}]'.format(slug, title_raw, viewers)
+        follow_label = str(language(30050 if slug in followed else 30049))
+        ctx = [(follow_label, 'RunPlugin({})'.format(
+                plugin.url_for(toggle_follow, slug=slug, name=slug, pic=pic)))]
         add_item(plugin.url_for(list_channel, slug=slug), label, thumbnail,
                  infoLabels={'title': label, 'plot': label},
-                 icon=pic, folder=True)
+                 icon=pic, folder=True, context_items=ctx)
     cursor = (jsdata.get('pagination') or {}).get('next_cursor')
     if cursor:
         parsed   = urlparse(url)

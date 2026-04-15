@@ -81,3 +81,27 @@ msgstr "InputStream Helper לא מותקן"
 msgctxt "#30047"
 msgid "Content"
 msgstr "תוכן"
+
+msgctxt "#30048"
+msgid "Followed channels"
+msgstr "ערוצים שאני עוקב"
+
+msgctxt "#30049"
+msgid "Follow"
+msgstr "עקוב"
+
+msgctxt "#30050"
+msgid "Unfollow"
+msgstr "הפסק לעקוב"
+
+msgctxt "#30051"
+msgid "Added to followed"
+msgstr "נוסף לעוקבים"
+
+msgctxt "#30052"
+msgid "Removed from followed"
+msgstr "הוסר מהעוקבים"
+
+msgctxt "#30053"
+msgid "No followed channels"
+msgstr "אין ערוצים שאתה עוקב"

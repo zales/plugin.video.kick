@@ -81,3 +81,27 @@ msgstr "InputStream Helper tidak terpasang"
 msgctxt "#30047"
 msgid "Content"
 msgstr "Konten"
+
+msgctxt "#30048"
+msgid "Followed channels"
+msgstr "Saluran yang diikuti"
+
+msgctxt "#30049"
+msgid "Follow"
+msgstr "Ikuti"
+
+msgctxt "#30050"
+msgid "Unfollow"
+msgstr "Berhenti mengikuti"
+
+msgctxt "#30051"
+msgid "Added to followed"
+msgstr "Ditambahkan ke yang diikuti"
+
+msgctxt "#30052"
+msgid "Removed from followed"
+msgstr "Dihapus dari yang diikuti"
+
+msgctxt "#30053"
+msgid "No followed channels"
+msgstr "Tidak ada saluran yang diikuti"

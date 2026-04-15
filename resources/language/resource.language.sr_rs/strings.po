@@ -81,3 +81,27 @@ msgstr "InputStream Helper није инсталиран"
 msgctxt "#30047"
 msgid "Content"
 msgstr "Садржај"
+
+msgctxt "#30048"
+msgid "Followed channels"
+msgstr "Праћени канали"
+
+msgctxt "#30049"
+msgid "Follow"
+msgstr "Прати"
+
+msgctxt "#30050"
+msgid "Unfollow"
+msgstr "Престани да прати"
+
+msgctxt "#30051"
+msgid "Added to followed"
+msgstr "Додато у праћене"
+
+msgctxt "#30052"
+msgid "Removed from followed"
+msgstr "Уклоњено из праћених"
+
+msgctxt "#30053"
+msgid "No followed channels"
+msgstr "Нема праћених канала"
