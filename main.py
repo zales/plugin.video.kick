@@ -192,15 +192,9 @@ def _end_dir():
 @plugin.route('/')
 def home():
     """Main menu: followed, live, categories, search, settings."""
-    lang_val = addon.getSetting('lang') or 'all'
-    if lang_val == 'all':
-        live_url = URL_PUB_LIVESTREAMS + '?limit=100'
-    else:
-        live_url = URL_PUB_LIVESTREAMS + '?language={}&limit=100'.format(lang_val)
-
     add_item(plugin.url_for(list_followed),
              str(language(30048)), ICON, folder=True)
-    add_item(plugin.url_for(live, url=live_url),
+    add_item(plugin.url_for(live),
              str(language(30003)), ICON, folder=True)
     add_item(plugin.url_for(list_subcategories, url=URL_PUB_V2_CATS + '?limit=50'),
              str(language(30004)), ICON, folder=True)
@@ -294,7 +288,16 @@ def toggle_follow(slug):
 @plugin.route('/live')
 def live():
     """List currently live streams (public API)."""
-    url      = plugin.args.get('url', URL_PUB_LIVESTREAMS + '?limit=100')
+    # Read lang setting fresh every time so changes take effect immediately
+    if not plugin.args.get('url'):
+        lang_val = addon.getSetting('lang') or 'all'
+        if lang_val == 'all':
+            default_url = URL_PUB_LIVESTREAMS + '?limit=100'
+        else:
+            default_url = URL_PUB_LIVESTREAMS + '?language={}&limit=100'.format(lang_val)
+    else:
+        default_url = URL_PUB_LIVESTREAMS + '?limit=100'
+    url      = plugin.args.get('url', default_url)
     jsdata   = _pub_get(url)
     followed = _load_followed()
     for x in (jsdata.get('data') or []):

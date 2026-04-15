@@ -1,3 +1,12 @@
+2.6.12
+- fix: settings section/category/group structure — settings dialog now shows correctly
+- fix: lang spinner uses numeric string IDs (#30060-30100) — no crash on Kodi 21
+- fix: option values as element text content, not value= attribute
+- fix: missing blank lines in all 32 PO files — translations #30047+ now work
+- fix: "Followed channels" and other new strings now translate correctly
+- fix: lang setting read on every /live call — change takes effect immediately
+- feat: All languages option added (default), quality toggle
+
 2.6.11
 - fix: settings now visible - proper section/category/group structure required by Kodi 19+
 - feat: language filter has "All languages" option (default), shows all streams

@@ -121,3 +121,167 @@ msgstr "每次询问"
 msgctxt "#30057"
 msgid "All languages"
 msgstr ""
+
+msgctxt "#30060"
+msgid "Afrikaans"
+msgstr ""
+
+msgctxt "#30061"
+msgid "Albanian"
+msgstr ""
+
+msgctxt "#30062"
+msgid "Arabic"
+msgstr ""
+
+msgctxt "#30063"
+msgid "Bangla"
+msgstr ""
+
+msgctxt "#30064"
+msgid "Bulgarian"
+msgstr ""
+
+msgctxt "#30065"
+msgid "Catalan"
+msgstr ""
+
+msgctxt "#30066"
+msgid "Chinese"
+msgstr ""
+
+msgctxt "#30067"
+msgid "Czech"
+msgstr ""
+
+msgctxt "#30068"
+msgid "Dutch"
+msgstr ""
+
+msgctxt "#30069"
+msgid "English"
+msgstr ""
+
+msgctxt "#30070"
+msgid "Filipino"
+msgstr ""
+
+msgctxt "#30071"
+msgid "Finnish"
+msgstr ""
+
+msgctxt "#30072"
+msgid "French"
+msgstr ""
+
+msgctxt "#30073"
+msgid "Georgian"
+msgstr ""
+
+msgctxt "#30074"
+msgid "German"
+msgstr ""
+
+msgctxt "#30075"
+msgid "Greek"
+msgstr ""
+
+msgctxt "#30076"
+msgid "Hebrew"
+msgstr ""
+
+msgctxt "#30077"
+msgid "Hindi"
+msgstr ""
+
+msgctxt "#30078"
+msgid "Hungarian"
+msgstr ""
+
+msgctxt "#30079"
+msgid "Indonesian"
+msgstr ""
+
+msgctxt "#30080"
+msgid "Italian"
+msgstr ""
+
+msgctxt "#30081"
+msgid "Japanese"
+msgstr ""
+
+msgctxt "#30082"
+msgid "Korean"
+msgstr ""
+
+msgctxt "#30083"
+msgid "Latin"
+msgstr ""
+
+msgctxt "#30084"
+msgid "Mongolian"
+msgstr ""
+
+msgctxt "#30085"
+msgid "Persian"
+msgstr ""
+
+msgctxt "#30086"
+msgid "Polish"
+msgstr ""
+
+msgctxt "#30087"
+msgid "Portuguese"
+msgstr ""
+
+msgctxt "#30088"
+msgid "Romanian"
+msgstr ""
+
+msgctxt "#30089"
+msgid "Russian"
+msgstr ""
+
+msgctxt "#30090"
+msgid "Serbian"
+msgstr ""
+
+msgctxt "#30091"
+msgid "Slovak"
+msgstr ""
+
+msgctxt "#30092"
+msgid "Spanish"
+msgstr ""
+
+msgctxt "#30093"
+msgid "Swedish"
+msgstr ""
+
+msgctxt "#30094"
+msgid "Thai"
+msgstr ""
+
+msgctxt "#30095"
+msgid "Turkish"
+msgstr ""
+
+msgctxt "#30096"
+msgid "Ukrainian"
+msgstr ""
+
+msgctxt "#30097"
+msgid "Urdu"
+msgstr ""
+
+msgctxt "#30098"
+msgid "Vietnamese"
+msgstr ""
+
+msgctxt "#30099"
+msgid "Yoruba"
+msgstr ""
+
+msgctxt "#30100"
+msgid "Zulu"
+msgstr ""

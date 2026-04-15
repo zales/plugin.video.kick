@@ -10,51 +10,51 @@
                     <constraints>
                         <allowempty>false</allowempty>
                         <options>
-                            <option label="30057" value="all"/>
-                            <option label="Afrikaans"   value="af"/>
-                            <option label="Albanian"    value="sq"/>
-                            <option label="Arabic"      value="ar"/>
-                            <option label="Bangla"      value="bn"/>
-                            <option label="Bulgarian"   value="bg"/>
-                            <option label="Catalan"     value="ca"/>
-                            <option label="Chinese"     value="zh"/>
-                            <option label="Czech"       value="cs"/>
-                            <option label="Dutch"       value="nl"/>
-                            <option label="English"     value="en"/>
-                            <option label="Filipino"    value="fil"/>
-                            <option label="Finnish"     value="fi"/>
-                            <option label="French"      value="fr"/>
-                            <option label="Georgian"    value="ka"/>
-                            <option label="German"      value="de"/>
-                            <option label="Greek"       value="el"/>
-                            <option label="Hebrew"      value="he"/>
-                            <option label="Hindi"       value="hi"/>
-                            <option label="Hungarian"   value="hu"/>
-                            <option label="Indonesian"  value="id"/>
-                            <option label="Italian"     value="it"/>
-                            <option label="Japanese"    value="ja"/>
-                            <option label="Korean"      value="ko"/>
-                            <option label="Latin"       value="la"/>
-                            <option label="Mongolian"   value="mn"/>
-                            <option label="Persian"     value="fa"/>
-                            <option label="Polish"      value="pl"/>
-                            <option label="Portuguese"  value="pt"/>
-                            <option label="Romanian"    value="ro"/>
-                            <option label="Russian"     value="ru"/>
-                            <option label="Serbian"     value="sr"/>
-                            <option label="Slovak"      value="sk"/>
-                            <option label="Spanish"     value="es"/>
-                            <option label="Swedish"     value="sv"/>
-                            <option label="Thai"        value="th"/>
-                            <option label="Turkish"     value="tr"/>
-                            <option label="Ukrainian"   value="uk"/>
-                            <option label="Urdu"        value="ur"/>
-                            <option label="Vietnamese"  value="vi"/>
-                            <option label="Yoruba"      value="yo"/>
-                            <option label="Zulu"        value="zu"/>
+                            <option label="30057">all</option>
+                            <option label="30060">af</option>
+                            <option label="30061">sq</option>
+                            <option label="30062">ar</option>
+                            <option label="30063">bn</option>
+                            <option label="30064">bg</option>
+                            <option label="30065">ca</option>
+                            <option label="30066">zh</option>
+                            <option label="30067">cs</option>
+                            <option label="30068">nl</option>
+                            <option label="30069">en</option>
+                            <option label="30070">fil</option>
+                            <option label="30071">fi</option>
+                            <option label="30072">fr</option>
+                            <option label="30073">ka</option>
+                            <option label="30074">de</option>
+                            <option label="30075">el</option>
+                            <option label="30076">he</option>
+                            <option label="30077">hi</option>
+                            <option label="30078">hu</option>
+                            <option label="30079">id</option>
+                            <option label="30080">it</option>
+                            <option label="30081">ja</option>
+                            <option label="30082">ko</option>
+                            <option label="30083">la</option>
+                            <option label="30084">mn</option>
+                            <option label="30085">fa</option>
+                            <option label="30086">pl</option>
+                            <option label="30087">pt</option>
+                            <option label="30088">ro</option>
+                            <option label="30089">ru</option>
+                            <option label="30090">sr</option>
+                            <option label="30091">sk</option>
+                            <option label="30092">es</option>
+                            <option label="30093">sv</option>
+                            <option label="30094">th</option>
+                            <option label="30095">tr</option>
+                            <option label="30096">uk</option>
+                            <option label="30097">ur</option>
+                            <option label="30098">vi</option>
+                            <option label="30099">yo</option>
+                            <option label="30100">zu</option>
                         </options>
                     </constraints>
-                    <control type="list" multiselect="false"/>
+                    <control type="spinner" format="string"/>
                 </setting>
 
                 <setting id="quality" type="boolean" label="30054">

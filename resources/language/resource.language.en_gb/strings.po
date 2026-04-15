@@ -133,3 +133,167 @@ msgstr "Ask every time"
 msgctxt "#30057"
 msgid "All languages"
 msgstr "All languages"
+
+msgctxt "#30060"
+msgid "Afrikaans"
+msgstr "Afrikaans"
+
+msgctxt "#30061"
+msgid "Albanian"
+msgstr "Albanian"
+
+msgctxt "#30062"
+msgid "Arabic"
+msgstr "Arabic"
+
+msgctxt "#30063"
+msgid "Bangla"
+msgstr "Bangla"
+
+msgctxt "#30064"
+msgid "Bulgarian"
+msgstr "Bulgarian"
+
+msgctxt "#30065"
+msgid "Catalan"
+msgstr "Catalan"
+
+msgctxt "#30066"
+msgid "Chinese"
+msgstr "Chinese"
+
+msgctxt "#30067"
+msgid "Czech"
+msgstr "Czech"
+
+msgctxt "#30068"
+msgid "Dutch"
+msgstr "Dutch"
+
+msgctxt "#30069"
+msgid "English"
+msgstr "English"
+
+msgctxt "#30070"
+msgid "Filipino"
+msgstr "Filipino"
+
+msgctxt "#30071"
+msgid "Finnish"
+msgstr "Finnish"
+
+msgctxt "#30072"
+msgid "French"
+msgstr "French"
+
+msgctxt "#30073"
+msgid "Georgian"
+msgstr "Georgian"
+
+msgctxt "#30074"
+msgid "German"
+msgstr "German"
+
+msgctxt "#30075"
+msgid "Greek"
+msgstr "Greek"
+
+msgctxt "#30076"
+msgid "Hebrew"
+msgstr "Hebrew"
+
+msgctxt "#30077"
+msgid "Hindi"
+msgstr "Hindi"
+
+msgctxt "#30078"
+msgid "Hungarian"
+msgstr "Hungarian"
+
+msgctxt "#30079"
+msgid "Indonesian"
+msgstr "Indonesian"
+
+msgctxt "#30080"
+msgid "Italian"
+msgstr "Italian"
+
+msgctxt "#30081"
+msgid "Japanese"
+msgstr "Japanese"
+
+msgctxt "#30082"
+msgid "Korean"
+msgstr "Korean"
+
+msgctxt "#30083"
+msgid "Latin"
+msgstr "Latin"
+
+msgctxt "#30084"
+msgid "Mongolian"
+msgstr "Mongolian"
+
+msgctxt "#30085"
+msgid "Persian"
+msgstr "Persian"
+
+msgctxt "#30086"
+msgid "Polish"
+msgstr "Polish"
+
+msgctxt "#30087"
+msgid "Portuguese"
+msgstr "Portuguese"
+
+msgctxt "#30088"
+msgid "Romanian"
+msgstr "Romanian"
+
+msgctxt "#30089"
+msgid "Russian"
+msgstr "Russian"
+
+msgctxt "#30090"
+msgid "Serbian"
+msgstr "Serbian"
+
+msgctxt "#30091"
+msgid "Slovak"
+msgstr "Slovak"
+
+msgctxt "#30092"
+msgid "Spanish"
+msgstr "Spanish"
+
+msgctxt "#30093"
+msgid "Swedish"
+msgstr "Swedish"
+
+msgctxt "#30094"
+msgid "Thai"
+msgstr "Thai"
+
+msgctxt "#30095"
+msgid "Turkish"
+msgstr "Turkish"
+
+msgctxt "#30096"
+msgid "Ukrainian"
+msgstr "Ukrainian"
+
+msgctxt "#30097"
+msgid "Urdu"
+msgstr "Urdu"
+
+msgctxt "#30098"
+msgid "Vietnamese"
+msgstr "Vietnamese"
+
+msgctxt "#30099"
+msgid "Yoruba"
+msgstr "Yoruba"
+
+msgctxt "#30100"
+msgid "Zulu"
+msgstr "Zulu"
