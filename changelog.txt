@@ -1,3 +1,9 @@
+2.6.9
+- fix: settings visible (flat XML, no category/group wrappers)
+- feat: stream quality setting - Automatic or Ask every time
+- chore: Kodi 20+ only (xbmc.python 3.1.0)
+- strings #30054-30056 added to all 32 language files
+
 2.6.8
 - fix: settings items now visible in basic view (level=0)
 - fix: search results show LIVE badge, profile pic and follow/unfollow context menu
