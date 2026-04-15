@@ -83,7 +83,9 @@ export default {
 
     if (key && !key.endsWith('/')) {
       const rangeHeader = request.headers.get('Range');
-      const obj = await env.BUCKET.get(key, rangeHeader ? { range: request.headers } : undefined);
+      // Pass the full Request object so R2 can parse the Range header correctly.
+      // Never pass request.headers — R2 expects R2Range | Request, not Headers.
+      const obj = await env.BUCKET.get(key, rangeHeader ? { range: request } : undefined);
       if (!obj) return new Response('Not Found', { status: 404 });
       const headers = new Headers();
       const ext = key.split('.').pop().toLowerCase();
@@ -91,11 +93,15 @@ export default {
       headers.set('Content-Type', mimeTypes[ext] || obj.httpMetadata?.contentType || 'application/octet-stream');
       headers.set('Cache-Control', ext === 'zip' ? 'no-cache' : 'public, max-age=300');
       headers.set('Accept-Ranges', 'bytes');
-      if (obj.range) {
+      // Only return 206 when the client actually sent a Range header.
+      // Returning 206 for full-content requests breaks Kodi's addon installer.
+      if (rangeHeader && obj.range) {
         const { offset, length } = obj.range;
         headers.set('Content-Range', 'bytes ' + offset + '-' + (offset + length - 1) + '/' + obj.size);
+        headers.set('Content-Length', String(length));
         return new Response(obj.body, { status: 206, headers });
       }
+      headers.set('Content-Length', String(obj.size));
       return new Response(obj.body, { headers });
     }
 
