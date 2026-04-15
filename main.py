@@ -441,17 +441,25 @@ def _setup_inputstream(play_item, is_helper, hea):
 @plugin.route('/search')
 def list_search():
     """Display search results (categories + exact channel match) for the given query."""
-    query = plugin.args.get('q', '')
+    query    = plugin.args.get('q', '')
+    followed = _load_followed()
 
-    # Exact channel slug match
+    # Exact channel slug match via public API (includes stream/live info)
     ch_data  = _pub_get(URL_PUB_CHANNEL + '?slug=' + quote(query, safe=''))
     channels = ch_data.get('data') or []
     for x in channels:
-        slug  = x.get('slug', '')
-        label = slug
-        add_item(plugin.url_for(list_channel, slug=slug), label, ICON,
+        slug      = x.get('slug', '')
+        pic       = x.get('profile_picture') or ICON
+        stream    = x.get('stream') or {}
+        is_live   = stream.get('is_live', False)
+        thumbnail = stream.get('thumbnail') or pic
+        label     = slug + (LIVE_BADGE if is_live else '')
+        follow_label = str(language(30050 if slug in followed else 30049))
+        ctx = [(follow_label, 'RunPlugin({})'.format(
+                plugin.url_for(toggle_follow, slug=slug, name=slug, pic=pic)))]
+        add_item(plugin.url_for(list_channel, slug=slug), label, thumbnail,
                  infoLabels={'title': label, 'plot': label},
-                 folder=True)
+                 icon=pic, folder=True, context_items=ctx)
 
     # Category search (deprecated v1 endpoint but still works)
     cat_data = _pub_get(URL_PUB_CATEGORIES + '?q=' + quote_plus(query))
