@@ -1,0 +1,83 @@
+# Kodi Media Center language file
+# Addon Name: Kick.com
+# Addon id: plugin.video.kick
+# Addon Provider:
+msgid ""
+msgstr ""
+"Project-Id-Version: Kodi Addons\n"
+"Report-Msgid-Bugs-To: https://github.com/zales/plugin.video.kick/issues\n"
+"Last-Translator: xxxxx\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_CN\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+msgctxt "#30003"
+msgid "Live channels"
+msgstr "直播频道"
+
+msgctxt "#30004"
+msgid "Categories"
+msgstr "分类"
+
+msgctxt "#30005"
+msgid "Search"
+msgstr "搜索"
+
+msgctxt "#30020"
+msgid ">> next page >>"
+msgstr ">> 下一页 >>"
+
+msgctxt "#30024"
+msgid "[B][COLOR khaki]Videos[/COLOR] "
+msgstr "[B][COLOR khaki]视频[/COLOR] "
+
+msgctxt "#30025"
+msgid "[B][COLOR khaki]Clips[/COLOR] "
+msgstr "[B][COLOR khaki]短片[/COLOR] "
+
+msgctxt "#30029"
+msgid "Nothing found"
+msgstr "未找到任何内容"
+
+msgctxt "#30038"
+msgid "Search..."
+msgstr "搜索..."
+
+msgctxt "#30039"
+msgid "video quality"
+msgstr "视频质量"
+
+msgctxt "#30040"
+msgid "Ask video quality"
+msgstr "询问视频质量"
+
+msgctxt "#30041"
+msgid "Settings"
+msgstr "设置"
+
+msgctxt "#30042"
+msgid "Channel not found: {}"
+msgstr "未找到频道：{}"
+
+msgctxt "#30043"
+msgid "No recordings available"
+msgstr "没有可用录像"
+
+msgctxt "#30044"
+msgid "No clips available"
+msgstr "没有可用短片"
+
+msgctxt "#30045"
+msgid "Stream unavailable (offline or API error)"
+msgstr "直播不可用（离线或 API 错误）"
+
+msgctxt "#30046"
+msgid "InputStream Helper not installed"
+msgstr "InputStream Helper 未安装"
+
+msgctxt "#30047"
+msgid "Content"
+msgstr "内容"

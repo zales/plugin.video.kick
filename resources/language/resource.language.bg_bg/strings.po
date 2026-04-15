@@ -1,0 +1,83 @@
+# Kodi Media Center language file
+# Addon Name: Kick.com
+# Addon id: plugin.video.kick
+# Addon Provider:
+msgid ""
+msgstr ""
+"Project-Id-Version: Kodi Addons\n"
+"Report-Msgid-Bugs-To: https://github.com/zales/plugin.video.kick/issues\n"
+"Last-Translator: xxxxx\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: bg\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgctxt "#30003"
+msgid "Live channels"
+msgstr "Живи канали"
+
+msgctxt "#30004"
+msgid "Categories"
+msgstr "Категории"
+
+msgctxt "#30005"
+msgid "Search"
+msgstr "Търсене"
+
+msgctxt "#30020"
+msgid ">> next page >>"
+msgstr ">> следваща страница >>"
+
+msgctxt "#30024"
+msgid "[B][COLOR khaki]Videos[/COLOR] "
+msgstr "[B][COLOR khaki]Видео[/COLOR] "
+
+msgctxt "#30025"
+msgid "[B][COLOR khaki]Clips[/COLOR] "
+msgstr "[B][COLOR khaki]Клипове[/COLOR] "
+
+msgctxt "#30029"
+msgid "Nothing found"
+msgstr "Нищо не е намерено"
+
+msgctxt "#30038"
+msgid "Search..."
+msgstr "Търсене..."
+
+msgctxt "#30039"
+msgid "video quality"
+msgstr "качество на видеото"
+
+msgctxt "#30040"
+msgid "Ask video quality"
+msgstr "Питай за качество на видеото"
+
+msgctxt "#30041"
+msgid "Settings"
+msgstr "Настройки"
+
+msgctxt "#30042"
+msgid "Channel not found: {}"
+msgstr "Каналът не е намерен: {}"
+
+msgctxt "#30043"
+msgid "No recordings available"
+msgstr "Няма налични записи"
+
+msgctxt "#30044"
+msgid "No clips available"
+msgstr "Няма налични клипове"
+
+msgctxt "#30045"
+msgid "Stream unavailable (offline or API error)"
+msgstr "Стриймът не е достъпен (офлайн или API грешка)"
+
+msgctxt "#30046"
+msgid "InputStream Helper not installed"
+msgstr "InputStream Helper не е инсталиран"
+
+msgctxt "#30047"
+msgid "Content"
+msgstr "Съдържание"

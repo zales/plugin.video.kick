@@ -1,0 +1,83 @@
+# Kodi Media Center language file
+# Addon Name: Kick.com
+# Addon id: plugin.video.kick
+# Addon Provider:
+msgid ""
+msgstr ""
+"Project-Id-Version: Kodi Addons\n"
+"Report-Msgid-Bugs-To: https://github.com/zales/plugin.video.kick/issues\n"
+"Last-Translator: xxxxx\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: sv\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgctxt "#30003"
+msgid "Live channels"
+msgstr "Live-kanaler"
+
+msgctxt "#30004"
+msgid "Categories"
+msgstr "Kategorier"
+
+msgctxt "#30005"
+msgid "Search"
+msgstr "Sök"
+
+msgctxt "#30020"
+msgid ">> next page >>"
+msgstr ">> nästa sida >>"
+
+msgctxt "#30024"
+msgid "[B][COLOR khaki]Videos[/COLOR] "
+msgstr "[B][COLOR khaki]Videor[/COLOR] "
+
+msgctxt "#30025"
+msgid "[B][COLOR khaki]Clips[/COLOR] "
+msgstr "[B][COLOR khaki]Klipp[/COLOR] "
+
+msgctxt "#30029"
+msgid "Nothing found"
+msgstr "Inget hittades"
+
+msgctxt "#30038"
+msgid "Search..."
+msgstr "Sök..."
+
+msgctxt "#30039"
+msgid "video quality"
+msgstr "videokvalitet"
+
+msgctxt "#30040"
+msgid "Ask video quality"
+msgstr "Fråga om videokvalitet"
+
+msgctxt "#30041"
+msgid "Settings"
+msgstr "Inställningar"
+
+msgctxt "#30042"
+msgid "Channel not found: {}"
+msgstr "Kanalen hittades inte: {}"
+
+msgctxt "#30043"
+msgid "No recordings available"
+msgstr "Inga inspelningar tillgängliga"
+
+msgctxt "#30044"
+msgid "No clips available"
+msgstr "Inga klipp tillgängliga"
+
+msgctxt "#30045"
+msgid "Stream unavailable (offline or API error)"
+msgstr "Stream ej tillgänglig (offline eller API-fel)"
+
+msgctxt "#30046"
+msgid "InputStream Helper not installed"
+msgstr "InputStream Helper inte installerat"
+
+msgctxt "#30047"
+msgid "Content"
+msgstr "Innehåll"

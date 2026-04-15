@@ -1,0 +1,83 @@
+# Kodi Media Center language file
+# Addon Name: Kick.com
+# Addon id: plugin.video.kick
+# Addon Provider:
+msgid ""
+msgstr ""
+"Project-Id-Version: Kodi Addons\n"
+"Report-Msgid-Bugs-To: https://github.com/zales/plugin.video.kick/issues\n"
+"Last-Translator: xxxxx\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: hi\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgctxt "#30003"
+msgid "Live channels"
+msgstr "लाइव चैनल"
+
+msgctxt "#30004"
+msgid "Categories"
+msgstr "श्रेणियाँ"
+
+msgctxt "#30005"
+msgid "Search"
+msgstr "खोजें"
+
+msgctxt "#30020"
+msgid ">> next page >>"
+msgstr ">> अगला पृष्ठ >>"
+
+msgctxt "#30024"
+msgid "[B][COLOR khaki]Videos[/COLOR] "
+msgstr "[B][COLOR khaki]वीडियो[/COLOR] "
+
+msgctxt "#30025"
+msgid "[B][COLOR khaki]Clips[/COLOR] "
+msgstr "[B][COLOR khaki]क्लिप[/COLOR] "
+
+msgctxt "#30029"
+msgid "Nothing found"
+msgstr "कुछ नहीं मिला"
+
+msgctxt "#30038"
+msgid "Search..."
+msgstr "खोजें..."
+
+msgctxt "#30039"
+msgid "video quality"
+msgstr "वीडियो गुणवत्ता"
+
+msgctxt "#30040"
+msgid "Ask video quality"
+msgstr "वीडियो गुणवत्ता पूछें"
+
+msgctxt "#30041"
+msgid "Settings"
+msgstr "सेटिंग्स"
+
+msgctxt "#30042"
+msgid "Channel not found: {}"
+msgstr "चैनल नहीं मिला: {}"
+
+msgctxt "#30043"
+msgid "No recordings available"
+msgstr "कोई रिकॉर्डिंग उपलब्ध नहीं"
+
+msgctxt "#30044"
+msgid "No clips available"
+msgstr "कोई क्लिप उपलब्ध नहीं"
+
+msgctxt "#30045"
+msgid "Stream unavailable (offline or API error)"
+msgstr "स्ट्रीम अनुपलब्ध (ऑफलाइन या API त्रुटि)"
+
+msgctxt "#30046"
+msgid "InputStream Helper not installed"
+msgstr "InputStream Helper इंस्टॉल नहीं है"
+
+msgctxt "#30047"
+msgid "Content"
+msgstr "सामग्री"
