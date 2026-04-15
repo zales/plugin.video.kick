@@ -7,6 +7,7 @@
                 <level>0</level>
                 <default>en</default>
                 <constraints>
+                    <allowempty>false</allowempty>
                     <options>
                         <option label="Afrikaans"   value="af"/>
                         <option label="Albanian"    value="sq"/>
@@ -51,6 +52,7 @@
                         <option label="Zulu"        value="zu"/>
                     </options>
                 </constraints>
+                <control type="list" multiselect="false" />
             </setting>
         </group>
     </category>
@@ -60,6 +62,7 @@
             <setting id="askqual" type="boolean" label="30040">
                 <level>0</level>
                 <default>false</default>
+                <control type="toggle" />
             </setting>
         </group>
     </category>
