@@ -1,69 +1,67 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings version="2">
-    <section id="general">
 
-        <category id="content" label="30047">
-            <group id="1">
-                <setting id="lang" type="string" label="30014">
-                    <level>0</level>
-                    <default>en</default>
-                    <constraints>
-                        <options>
-                            <option label="Afrikaans"   value="af"/>
-                            <option label="Albanian"    value="sq"/>
-                            <option label="Arabic"      value="ar"/>
-                            <option label="Bangla"      value="bn"/>
-                            <option label="Bulgarian"   value="bg"/>
-                            <option label="Catalan"     value="ca"/>
-                            <option label="Chinese"     value="zh"/>
-                            <option label="Czech"       value="cs"/>
-                            <option label="Dutch"       value="nl"/>
-                            <option label="English"     value="en"/>
-                            <option label="Filipino"    value="fil"/>
-                            <option label="Finnish"     value="fi"/>
-                            <option label="French"      value="fr"/>
-                            <option label="Georgian"    value="ka"/>
-                            <option label="German"      value="de"/>
-                            <option label="Greek"       value="el"/>
-                            <option label="Hebrew"      value="he"/>
-                            <option label="Hindi"       value="hi"/>
-                            <option label="Hungarian"   value="hu"/>
-                            <option label="Indonesian"  value="id"/>
-                            <option label="Italian"     value="it"/>
-                            <option label="Japanese"    value="ja"/>
-                            <option label="Korean"      value="ko"/>
-                            <option label="Latin"       value="la"/>
-                            <option label="Mongolian"   value="mn"/>
-                            <option label="Persian"     value="fa"/>
-                            <option label="Polish"      value="pl"/>
-                            <option label="Portuguese"  value="pt"/>
-                            <option label="Romanian"    value="ro"/>
-                            <option label="Russian"     value="ru"/>
-                            <option label="Serbian"     value="sr"/>
-                            <option label="Slovak"      value="sk"/>
-                            <option label="Spanish"     value="es"/>
-                            <option label="Swedish"     value="sv"/>
-                            <option label="Thai"        value="th"/>
-                            <option label="Turkish"     value="tr"/>
-                            <option label="Ukrainian"   value="uk"/>
-                            <option label="Urdu"        value="ur"/>
-                            <option label="Vietnamese"  value="vi"/>
-                            <option label="Yoruba"      value="yo"/>
-                            <option label="Zulu"        value="zu"/>
-                        </options>
-                    </constraints>
-                </setting>
-            </group>
-        </category>
+    <category id="content" label="30047">
+        <group id="1">
+            <setting id="lang" type="string" label="30014">
+                <level>0</level>
+                <default>en</default>
+                <constraints>
+                    <options>
+                        <option label="Afrikaans"   value="af"/>
+                        <option label="Albanian"    value="sq"/>
+                        <option label="Arabic"      value="ar"/>
+                        <option label="Bangla"      value="bn"/>
+                        <option label="Bulgarian"   value="bg"/>
+                        <option label="Catalan"     value="ca"/>
+                        <option label="Chinese"     value="zh"/>
+                        <option label="Czech"       value="cs"/>
+                        <option label="Dutch"       value="nl"/>
+                        <option label="English"     value="en"/>
+                        <option label="Filipino"    value="fil"/>
+                        <option label="Finnish"     value="fi"/>
+                        <option label="French"      value="fr"/>
+                        <option label="Georgian"    value="ka"/>
+                        <option label="German"      value="de"/>
+                        <option label="Greek"       value="el"/>
+                        <option label="Hebrew"      value="he"/>
+                        <option label="Hindi"       value="hi"/>
+                        <option label="Hungarian"   value="hu"/>
+                        <option label="Indonesian"  value="id"/>
+                        <option label="Italian"     value="it"/>
+                        <option label="Japanese"    value="ja"/>
+                        <option label="Korean"      value="ko"/>
+                        <option label="Latin"       value="la"/>
+                        <option label="Mongolian"   value="mn"/>
+                        <option label="Persian"     value="fa"/>
+                        <option label="Polish"      value="pl"/>
+                        <option label="Portuguese"  value="pt"/>
+                        <option label="Romanian"    value="ro"/>
+                        <option label="Russian"     value="ru"/>
+                        <option label="Serbian"     value="sr"/>
+                        <option label="Slovak"      value="sk"/>
+                        <option label="Spanish"     value="es"/>
+                        <option label="Swedish"     value="sv"/>
+                        <option label="Thai"        value="th"/>
+                        <option label="Turkish"     value="tr"/>
+                        <option label="Ukrainian"   value="uk"/>
+                        <option label="Urdu"        value="ur"/>
+                        <option label="Vietnamese"  value="vi"/>
+                        <option label="Yoruba"      value="yo"/>
+                        <option label="Zulu"        value="zu"/>
+                    </options>
+                </constraints>
+            </setting>
+        </group>
+    </category>
 
-        <category id="playback" label="30039">
-            <group id="1">
-                <setting id="askqual" type="boolean" label="30040">
-                    <level>0</level>
-                    <default>false</default>
-                </setting>
-            </group>
-        </category>
+    <category id="playback" label="30039">
+        <group id="1">
+            <setting id="askqual" type="boolean" label="30040">
+                <level>0</level>
+                <default>false</default>
+            </setting>
+        </group>
+    </category>
 
-    </section>
 </settings>
