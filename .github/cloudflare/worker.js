@@ -19,6 +19,36 @@ const CORS_HEADERS = {
   'Access-Control-Allow-Headers': 'Content-Type',
 };
 
+// ---------------------------------------------------------------------------
+// Simple in-memory sliding-window rate limiter (per-IP, per isolate).
+// Not shared across Workers isolates, but sufficient to block obvious abuse.
+// ---------------------------------------------------------------------------
+const RATE_WINDOW_MS = 60_000;   // 1 minute
+const RATE_MAX_HITS  = 60;       // max requests per window
+const _hits = new Map();         // ip -> [timestamp, ...]
+
+function _rateOk(ip) {
+  const now = Date.now();
+  let timestamps = _hits.get(ip);
+  if (!timestamps) {
+    timestamps = [];
+    _hits.set(ip, timestamps);
+  }
+  // Evict entries older than the window
+  while (timestamps.length && timestamps[0] <= now - RATE_WINDOW_MS)
+    timestamps.shift();
+  if (timestamps.length >= RATE_MAX_HITS) return false;
+  timestamps.push(now);
+  // Prevent memory leak: drop IPs with no recent hits (lazy GC)
+  if (_hits.size > 10_000) {
+    for (const [k, v] of _hits) {
+      if (!v.length) _hits.delete(k);
+      if (_hits.size <= 5_000) break;
+    }
+  }
+  return true;
+}
+
 export default {
   async fetch(request, env) {
     const url     = new URL(request.url);
@@ -26,6 +56,14 @@ export default {
 
     if (request.method === 'OPTIONS')
       return new Response(null, { status: 204, headers: CORS_HEADERS });
+
+    // Rate-limit proxied / token endpoints (R2 serving is unlimited)
+    const clientIp = request.headers.get('CF-Connecting-IP') || 'unknown';
+    if ((path === '/app-token' || path.startsWith('/proxy/')) && !_rateOk(clientIp))
+      return new Response(JSON.stringify({ error: 'rate_limited' }), {
+        status: 429,
+        headers: { 'Content-Type': 'application/json', 'Retry-After': '60', ...CORS_HEADERS },
+      });
 
     // GET /app-token — returns cached client_credentials Bearer token for Kick public API
     if (path === '/app-token') {
