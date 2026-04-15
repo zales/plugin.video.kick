@@ -105,3 +105,15 @@ msgstr "از دنبال‌شده‌ها حذف شد"
 msgctxt "#30053"
 msgid "No followed channels"
 msgstr "هیچ کانال دنبال‌شده‌ای وجود ندارد"
+
+msgctxt "#30054"
+msgid "Stream quality"
+msgstr "کیفیت پخش"
+
+msgctxt "#30055"
+msgid "Automatic"
+msgstr "خودکار"
+
+msgctxt "#30056"
+msgid "Ask every time"
+msgstr "همیشه بپرس"

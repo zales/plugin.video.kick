@@ -105,3 +105,15 @@ msgstr "Dihapus dari yang diikuti"
 msgctxt "#30053"
 msgid "No followed channels"
 msgstr "Tidak ada saluran yang diikuti"
+
+msgctxt "#30054"
+msgid "Stream quality"
+msgstr "Kualitas streaming"
+
+msgctxt "#30055"
+msgid "Automatic"
+msgstr "Otomatis"
+
+msgctxt "#30056"
+msgid "Ask every time"
+msgstr "Selalu tanya"

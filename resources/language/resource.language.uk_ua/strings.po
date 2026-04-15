@@ -105,3 +105,15 @@ msgstr "Видалено з відстежуваних"
 msgctxt "#30053"
 msgid "No followed channels"
 msgstr "Немає відстежуваних каналів"
+
+msgctxt "#30054"
+msgid "Stream quality"
+msgstr "Якість потоку"
+
+msgctxt "#30055"
+msgid "Automatic"
+msgstr "Автоматично"
+
+msgctxt "#30056"
+msgid "Ask every time"
+msgstr "Завжди запитувати"

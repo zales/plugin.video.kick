@@ -105,3 +105,15 @@ msgstr "Đã xóa khỏi theo dõi"
 msgctxt "#30053"
 msgid "No followed channels"
 msgstr "Không có kênh theo dõi"
+
+msgctxt "#30054"
+msgid "Stream quality"
+msgstr "Chất lượng stream"
+
+msgctxt "#30055"
+msgid "Automatic"
+msgstr "Tự động"
+
+msgctxt "#30056"
+msgid "Ask every time"
+msgstr "Luôn hỏi"

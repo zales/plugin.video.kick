@@ -448,10 +448,10 @@ def _resolve_stream(slug):
 
 def _setup_inputstream(play_item, is_helper, hea):
     """Configure InputStream Adaptive properties on a ListItem."""
-    askqual = addon.getSetting('askqual')
+    quality = addon.getSetting('quality') or 'ask'
     play_item.setProperty('IsPlayable', 'true')
     play_item.setProperty('inputstream', is_helper.inputstream_addon)
-    if askqual != 'false':
+    if quality == 'ask':
         play_item.setProperty('inputstream.adaptive.stream_selection_type', 'ask-quality')
     play_item.setProperty('inputstream.adaptive.manifest_type', 'hls')
     play_item.setMimeType('application/vnd.apple.mpegurl')

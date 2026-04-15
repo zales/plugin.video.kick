@@ -105,3 +105,15 @@ msgstr "Takip edilenlerden kaldırıldı"
 msgctxt "#30053"
 msgid "No followed channels"
 msgstr "Takip edilen kanal yok"
+
+msgctxt "#30054"
+msgid "Stream quality"
+msgstr "Yayın kalitesi"
+
+msgctxt "#30055"
+msgid "Automatic"
+msgstr "Otomatik"
+
+msgctxt "#30056"
+msgid "Ask every time"
+msgstr "Her zaman sor"

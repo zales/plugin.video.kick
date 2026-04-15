@@ -105,3 +105,15 @@ msgstr "फॉलो से हटाया गया"
 msgctxt "#30053"
 msgid "No followed channels"
 msgstr "कोई फॉलो किया हुआ चैनल नहीं"
+
+msgctxt "#30054"
+msgid "Stream quality"
+msgstr "स्ट्रीम गुणवत्ता"
+
+msgctxt "#30055"
+msgid "Automatic"
+msgstr "स्वचालित"
+
+msgctxt "#30056"
+msgid "Ask every time"
+msgstr "हमेशा पूछें"

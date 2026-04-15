@@ -105,3 +105,15 @@ msgstr "Eliminat dels seguits"
 msgctxt "#30053"
 msgid "No followed channels"
 msgstr "Sense canals seguits"
+
+msgctxt "#30054"
+msgid "Stream quality"
+msgstr "Qualitat del stream"
+
+msgctxt "#30055"
+msgid "Automatic"
+msgstr "Automàtic"
+
+msgctxt "#30056"
+msgid "Ask every time"
+msgstr "Preguntar sempre"

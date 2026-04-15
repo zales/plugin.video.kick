@@ -105,3 +105,15 @@ msgstr "ลบออกจากช่องที่ติดตาม"
 msgctxt "#30053"
 msgid "No followed channels"
 msgstr "ไม่มีช่องที่ติดตาม"
+
+msgctxt "#30054"
+msgid "Stream quality"
+msgstr "คุณภาพสตรีม"
+
+msgctxt "#30055"
+msgid "Automatic"
+msgstr "อัตโนมัติ"
+
+msgctxt "#30056"
+msgid "Ask every time"
+msgstr "ถามทุกครั้ง"

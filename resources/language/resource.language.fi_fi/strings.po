@@ -105,3 +105,15 @@ msgstr "Poistettu seuratusta"
 msgctxt "#30053"
 msgid "No followed channels"
 msgstr "Ei seurattuja kanavia"
+
+msgctxt "#30054"
+msgid "Stream quality"
+msgstr "Suoratoiston laatu"
+
+msgctxt "#30055"
+msgid "Automatic"
+msgstr "Automaattinen"
+
+msgctxt "#30056"
+msgid "Ask every time"
+msgstr "Kysy aina"

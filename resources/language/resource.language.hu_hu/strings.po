@@ -105,3 +105,15 @@ msgstr "Eltávolítva a követettekből"
 msgctxt "#30053"
 msgid "No followed channels"
 msgstr "Nincs követett csatorna"
+
+msgctxt "#30054"
+msgid "Stream quality"
+msgstr "Stream minőség"
+
+msgctxt "#30055"
+msgid "Automatic"
+msgstr "Automatikus"
+
+msgctxt "#30056"
+msgid "Ask every time"
+msgstr "Mindig kérdezzen"

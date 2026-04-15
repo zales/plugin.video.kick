@@ -115,3 +115,15 @@ msgstr "Odebráno ze sledovaných"
 msgctxt "#30053"
 msgid "No followed channels"
 msgstr "Žádné sledované kanály"
+
+msgctxt "#30054"
+msgid "Stream quality"
+msgstr "Kvalita streamu"
+
+msgctxt "#30055"
+msgid "Automatic"
+msgstr "Automaticky"
+
+msgctxt "#30056"
+msgid "Ask every time"
+msgstr "Vybrat vždy"

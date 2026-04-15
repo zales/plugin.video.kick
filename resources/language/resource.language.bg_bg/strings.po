@@ -105,3 +105,15 @@ msgstr "Премахнато от следваните"
 msgctxt "#30053"
 msgid "No followed channels"
 msgstr "Няма следвани канали"
+
+msgctxt "#30054"
+msgid "Stream quality"
+msgstr "Качество на стрийма"
+
+msgctxt "#30055"
+msgid "Automatic"
+msgstr "Автоматично"
+
+msgctxt "#30056"
+msgid "Ask every time"
+msgstr "Питай винаги"

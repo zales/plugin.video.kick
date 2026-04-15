@@ -105,3 +105,15 @@ msgstr "Eliminat din urmărite"
 msgctxt "#30053"
 msgid "No followed channels"
 msgstr "Nicio canal urmărit"
+
+msgctxt "#30054"
+msgid "Stream quality"
+msgstr "Calitate stream"
+
+msgctxt "#30055"
+msgid "Automatic"
+msgstr "Automat"
+
+msgctxt "#30056"
+msgid "Ask every time"
+msgstr "Întreabă mereu"

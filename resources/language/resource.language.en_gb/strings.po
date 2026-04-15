@@ -117,3 +117,15 @@ msgstr "Removed from followed"
 msgctxt "#30053"
 msgid "No followed channels"
 msgstr "No followed channels"
+
+msgctxt "#30054"
+msgid "Stream quality"
+msgstr "Stream quality"
+
+msgctxt "#30055"
+msgid "Automatic"
+msgstr "Automatic"
+
+msgctxt "#30056"
+msgid "Ask every time"
+msgstr "Ask every time"

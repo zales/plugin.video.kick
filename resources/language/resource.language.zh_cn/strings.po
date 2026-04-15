@@ -105,3 +105,15 @@ msgstr "已从关注中移除"
 msgctxt "#30053"
 msgid "No followed channels"
 msgstr "没有关注的频道"
+
+msgctxt "#30054"
+msgid "Stream quality"
+msgstr "串流质量"
+
+msgctxt "#30055"
+msgid "Automatic"
+msgstr "自动"
+
+msgctxt "#30056"
+msgid "Ask every time"
+msgstr "每次询问"

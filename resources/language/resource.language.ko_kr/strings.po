@@ -105,3 +105,15 @@ msgstr "팔로우에서 제거됨"
 msgctxt "#30053"
 msgid "No followed channels"
 msgstr "팔로우 중인 채널 없음"
+
+msgctxt "#30054"
+msgid "Stream quality"
+msgstr "스트림 품질"
+
+msgctxt "#30055"
+msgid "Automatic"
+msgstr "자동"
+
+msgctxt "#30056"
+msgid "Ask every time"
+msgstr "항상 묻기"

@@ -105,3 +105,15 @@ msgstr "تمت الإزالة من المتابعة"
 msgctxt "#30053"
 msgid "No followed channels"
 msgstr "لا توجد قنوات متابعة"
+
+msgctxt "#30054"
+msgid "Stream quality"
+msgstr "جودة البث"
+
+msgctxt "#30055"
+msgid "Automatic"
+msgstr "تلقائي"
+
+msgctxt "#30056"
+msgid "Ask every time"
+msgstr "اسأل دائماً"

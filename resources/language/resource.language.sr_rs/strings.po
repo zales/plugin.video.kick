@@ -105,3 +105,15 @@ msgstr "Уклоњено из праћених"
 msgctxt "#30053"
 msgid "No followed channels"
 msgstr "Нема праћених канала"
+
+msgctxt "#30054"
+msgid "Stream quality"
+msgstr "Квалитет стрима"
+
+msgctxt "#30055"
+msgid "Automatic"
+msgstr "Аутоматски"
+
+msgctxt "#30056"
+msgid "Ask every time"
+msgstr "Увек питај"

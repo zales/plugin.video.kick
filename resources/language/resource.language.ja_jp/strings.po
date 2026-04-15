@@ -105,3 +105,15 @@ msgstr "フォロー済みから削除"
 msgctxt "#30053"
 msgid "No followed channels"
 msgstr "フォロー中のチャンネルなし"
+
+msgctxt "#30054"
+msgid "Stream quality"
+msgstr "ストリーム品質"
+
+msgctxt "#30055"
+msgid "Automatic"
+msgstr "自動"
+
+msgctxt "#30056"
+msgid "Ask every time"
+msgstr "毎回確認"
