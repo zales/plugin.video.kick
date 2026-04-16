@@ -1,3 +1,7 @@
+3.0.1
+- fix: chat overlay moved to background service — fixes CPythonInvoker 5s kill on Android
+- fix: plugin script returns immediately after setResolvedUrl
+
 3.0.0
 - feat: real-time chat overlay via Pusher WebSocket (replaces REST polling)
 - feat: stdlib-only WebSocket client (no external dependencies)

@@ -440,9 +440,7 @@ def play_video():
     is_live = raw_url and not raw_url.startswith('http') and \
               not raw_url.endswith('.mp4') and not raw_url.endswith('.m3u8')
     if is_live and addon.getSetting('chat') == 'true':
-        from resources.lib.chat import ChatOverlay
-        ChatOverlay(raw_url, _api_get, PROFILE, WORKER_BASE,
-                    URL_PROXY_CHANNEL).start()
+        xbmcgui.Window(10000).setProperty('kick.chat.slug', raw_url)
 
 
 def _resolve_stream(slug):

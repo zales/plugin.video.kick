@@ -145,10 +145,21 @@ class ChatOverlay:
         self._channel_url_tpl = channel_url_tpl
         self._lines = deque(maxlen=MAX_LINES)
         self._sub_path = os.path.join(profile_dir, 'chat.srt')
+        self._stop = threading.Event()
+        self._ws = None
         xbmcvfs.mkdirs(profile_dir)
 
     def start(self):
         threading.Thread(target=self._run, daemon=True).start()
+
+    def stop(self):
+        self._stop.set()
+        ws = self._ws
+        if ws:
+            try:
+                ws.close()
+            except Exception:
+                pass
 
     def _run(self):
         from urllib.parse import quote
@@ -156,10 +167,10 @@ class ChatOverlay:
 
         # Wait for playback
         for _ in range(30):
-            if player.isPlaying():
+            if self._stop.is_set() or player.isPlaying():
                 break
             xbmc.sleep(500)
-        if not player.isPlaying():
+        if self._stop.is_set() or not player.isPlaying():
             return
 
         # Resolve chatroom_id (Pusher uses chatroom.id, not channel id)
@@ -174,13 +185,12 @@ class ChatOverlay:
         xbmc.log(LOG_PREFIX + 'connecting WS for %s (chatroom=%s)' % (
             self._slug, chatroom_id), xbmc.LOGINFO)
 
-        ws = None
         try:
-            ws = _ws_connect()
+            self._ws = _ws_connect()
             # Read connection_established
-            _ws_recv(ws)
+            _ws_recv(self._ws)
             # Subscribe
-            _ws_send(ws, json.dumps({
+            _ws_send(self._ws, json.dumps({
                 'event': 'pusher:subscribe',
                 'data': {'channel': channel}
             }))
@@ -190,10 +200,10 @@ class ChatOverlay:
             self._write_srt('')
             player.setSubtitles(self._sub_path)
 
-            ws.settimeout(1.0)
-            while player.isPlaying():
+            self._ws.settimeout(1.0)
+            while not self._stop.is_set() and player.isPlaying():
                 try:
-                    raw = _ws_recv(ws)
+                    raw = _ws_recv(self._ws)
                 except socket.timeout:
                     continue
                 except Exception:
@@ -209,7 +219,7 @@ class ChatOverlay:
 
                 # Pusher ping
                 if event_name == 'pusher:ping':
-                    _ws_send(ws, json.dumps({'event': 'pusher:pong', 'data': {}}))
+                    _ws_send(self._ws, json.dumps({'event': 'pusher:pong', 'data': {}}))
                     continue
 
                 # Chat message
@@ -236,11 +246,12 @@ class ChatOverlay:
         except Exception as exc:
             xbmc.log(LOG_PREFIX + 'WS error: %s' % exc, xbmc.LOGWARNING)
         finally:
-            if ws:
+            if self._ws:
                 try:
-                    ws.close()
+                    self._ws.close()
                 except Exception:
                     pass
+                self._ws = None
             try:
                 xbmcvfs.delete(self._sub_path)
             except Exception:
