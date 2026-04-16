@@ -1,11 +1,9 @@
 # -*- coding: UTF-8 -*-
 """Kodi plugin for kick.com."""
-import json
-import re
+import os
 import traceback
-from urllib.parse import quote, quote_plus, parse_qs, urlencode, urlparse
+from urllib.parse import quote, quote_plus
 
-import requests
 import xbmcgui
 import xbmcplugin
 import xbmcaddon
@@ -13,29 +11,28 @@ import xbmcvfs
 import xbmc
 
 from resources.lib.routing import Plugin
+from resources.lib.http import (
+    UA_STREAM, WORKER_BASE,
+    api_get, pub_get, pub_get_ex, OK, EMPTY, ERROR,
+)
+from resources.lib import utils
 
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-UA        = 'okhttp/4.9.2'
-UA_STREAM = 'Dalvik/2.1.0 (Linux; U; Android 9; SM-G960F Build/R16NW)'
-ADDON_ID  = 'plugin.video.kick'
+ADDON_ID = 'plugin.video.kick'
 
 # Public developer API (stable, needs Bearer token from client_credentials)
 API_PUB    = 'https://api.kick.com/public/v1'
 API_PUB_V2 = 'https://api.kick.com/public/v2'
 
-# Cloudflare Worker base URL
-WORKER_BASE = 'https://kodi.zales.dev'
-
-# Public API endpoints (require Bearer app token)
+# Public API endpoints
 URL_PUB_LIVESTREAMS = API_PUB + '/livestreams'
 URL_PUB_CHANNEL     = API_PUB + '/channels'
 URL_PUB_CATEGORIES  = API_PUB + '/categories'
 URL_PUB_V2_CATS     = API_PUB_V2 + '/categories'
 
 # Worker endpoints
-URL_APP_TOKEN     = WORKER_BASE + '/app-token'
 URL_PROXY_STREAM  = WORKER_BASE + '/proxy/kick/api/v2/channels/{slug}/livestream'
 URL_PROXY_CHANNEL = WORKER_BASE + '/proxy/kick/api/v1/channels/{slug}'
 URL_PROXY_CLIPS   = WORKER_BASE + '/proxy/kick/api/v2/channels/{slug}/clips?cursor=0&sort=view&time=all'
@@ -49,72 +46,22 @@ addon    = xbmcaddon.Addon(id=ADDON_ID)
 language = addon.getLocalizedString
 
 PATH          = addon.getAddonInfo('path')
-RESOURCES     = PATH + '/resources/'
-ICON          = RESOURCES + '../icon.png'
-NEXT_PAGE_IMG = RESOURCES + 'right.png'
+ICON          = os.path.join(PATH, 'icon.png')
+NEXT_PAGE_IMG = os.path.join(PATH, 'resources', 'right.png')
 PROFILE       = xbmcvfs.translatePath(addon.getAddonInfo('profile'))
-FOLLOWED_FILE = PROFILE + 'followed.json'
-
-# ---------------------------------------------------------------------------
-# Session
-# ---------------------------------------------------------------------------
-session    = requests.Session()
-session.headers.update({'User-Agent': UA, 'Accept': 'application/json'})
-
-# Token cache: stored in the home Window so it persists across plugin invocations
-# within a single Kodi session (each plugin call is a new Python process).
-_WIN       = xbmcgui.Window(10000)
-_TOKEN_KEY = 'kick_app_token'
+FOLLOWED_FILE = os.path.join(PROFILE, 'followed.json')
 
 
-def _api_get(url):
-    """GET url, return parsed JSON dict/list or {} on error."""
-    try:
-        r = session.get(url, timeout=15)
-        xbmc.log('KICK: GET {} → {}'.format(url[:120], r.status_code), xbmc.LOGINFO)
-        r.raise_for_status()
-        return r.json()
-    except Exception as exc:
-        xbmc.log('KICK: GET {} failed: {}'.format(url[:120], exc), xbmc.LOGERROR)
-        return {}
+def _load_followed():
+    return utils.load_followed(FOLLOWED_FILE)
 
 
-def _get_app_token():
-    """Return a Bearer token, cached in the home Window property across requests."""
-    token = _WIN.getProperty(_TOKEN_KEY)
-    if token:
-        return token
-    try:
-        r = session.get(URL_APP_TOKEN, timeout=10)
-        r.raise_for_status()
-        token = r.json().get('token', '')
-        if token:
-            _WIN.setProperty(_TOKEN_KEY, token)
-    except Exception as exc:
-        xbmc.log('KICK: app-token failed: {}'.format(exc), xbmc.LOGERROR)
-    return token
+def _save_followed(data):
+    utils.save_followed(PROFILE, FOLLOWED_FILE, data)
 
 
-def _pub_get(url):
-    """GET a Kick public API URL with Bearer app token; return parsed JSON or {}."""
-    token = _get_app_token()
-    if not token:
-        return {}
-    try:
-        r = session.get(url, timeout=15, headers={'Authorization': 'Bearer ' + token})
-        xbmc.log('KICK: PUB {} → {}'.format(url[:120], r.status_code), xbmc.LOGINFO)
-        if r.status_code == 401:
-            # Token expired — clear cache and retry once
-            _WIN.setProperty(_TOKEN_KEY, '')
-            token = _get_app_token()
-            if not token:
-                return {}
-            r = session.get(url, timeout=15, headers={'Authorization': 'Bearer ' + token})
-        r.raise_for_status()
-        return r.json()
-    except Exception as exc:
-        xbmc.log('KICK: PUB {} failed: {}'.format(url[:120], exc), xbmc.LOGERROR)
-        return {}
+clean_title = utils.clean_title
+_next_page_url = utils.next_page_url
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -122,44 +69,12 @@ def _pub_get(url):
 LIVE_BADGE = ' · [B][COLOR yellowgreen]LIVE[/COLOR][/B]'
 
 
-# Emoji / symbol characters to strip from stream titles
-_RE_STRIP = re.compile(
-    '['
-    '\U0001F000-\U0001FFFF'   # Misc symbols, emoticons, transport, etc.
-    '\U00002600-\U000027BF'   # Misc symbols, dingbats
-    '\U0000FE00-\U0000FE0F'   # Variation selectors
-    '\U00020000-\U0002A6DF'   # CJK extension B
-    '\u200d'                  # Zero-width joiner
-    '\uFE0F'                  # Variation selector-16
-    ']+',
-    flags=re.UNICODE,
-)
+def _notify(msg, icon=xbmcgui.NOTIFICATION_INFO, ms=3000):
+    xbmcgui.Dialog().notification('KICK.com', msg, icon, ms, False)
 
 
-def clean_title(s):
-    """Strip newlines and emoji/symbol characters from a string."""
-    return _RE_STRIP.sub('', (s or '').replace('\n', ' ')).strip()
-
-
-def _load_followed():
-    """Return the followed channels dict from disk, or {} on error."""
-    try:
-        if xbmcvfs.exists(FOLLOWED_FILE):
-            with xbmcvfs.File(FOLLOWED_FILE) as f:
-                return json.loads(f.read()) or {}
-    except Exception as exc:
-        xbmc.log('KICK: load_followed failed: {}'.format(exc), xbmc.LOGERROR)
-    return {}
-
-
-def _save_followed(data):
-    """Persist the followed channels dict to disk."""
-    try:
-        xbmcvfs.mkdirs(PROFILE)
-        with xbmcvfs.File(FOLLOWED_FILE, 'w') as f:
-            f.write(json.dumps(data))
-    except Exception as exc:
-        xbmc.log('KICK: save_followed failed: {}'.format(exc), xbmc.LOGERROR)
+def _notify_loc(strid, icon=xbmcgui.NOTIFICATION_INFO, ms=3000):
+    _notify(str(language(strid)), icon, ms)
 
 
 def add_item(url, name, image, infoLabels=None, IsPlayable=False, folder=False, icon=None, context_items=None):
@@ -207,7 +122,11 @@ def home():
 def list_subcategories():
     """Browse all categories using the public v2 API."""
     murl   = plugin.args.get('url', URL_PUB_V2_CATS + '?limit=50')
-    jsdata = _pub_get(murl)
+    status, jsdata = pub_get_ex(murl)
+    if status == ERROR:
+        _notify_loc(30105, xbmcgui.NOTIFICATION_ERROR, 4000)
+        _end_dir()
+        return
     for x in (jsdata.get('data') or []):
         cat_id = x.get('id', '')
         title  = x.get('name', '')
@@ -217,13 +136,7 @@ def list_subcategories():
                  infoLabels={'title': title, 'plot': title})
     cursor = (jsdata.get('pagination') or {}).get('next_cursor')
     if cursor:
-        parsed   = urlparse(murl)
-        pdict    = parse_qs(parsed.query, keep_blank_values=True)
-        pdict.pop('cursor', None)
-        flat     = {k: v[0] for k, v in pdict.items()}
-        flat['cursor'] = cursor
-        next_url = parsed._replace(query=urlencode(flat)).geturl()
-        add_item(plugin.url_for(list_subcategories, url=next_url),
+        add_item(plugin.url_for(list_subcategories, url=_next_page_url(murl, cursor)),
                  str(language(30020)), NEXT_PAGE_IMG, folder=True)
     _end_dir()
 
@@ -233,14 +146,13 @@ def list_followed():
     """List channels the user is following, with live status."""
     followed = _load_followed()
     if not followed:
-        xbmcgui.Dialog().notification('KICK.com', str(language(30053)),
-                                      xbmcgui.NOTIFICATION_INFO, 3000, False)
+        _notify_loc(30053)
         _end_dir()
         return
 
     # Fetch live status for all followed slugs in one API call
     slugs_qs = '&'.join('slug=' + quote(s, safe='') for s in followed)
-    live_data = _pub_get(URL_PUB_CHANNEL + '?' + slugs_qs)
+    live_data = pub_get(URL_PUB_CHANNEL + '?' + slugs_qs)
     live_map  = {}
     for ch in (live_data.get('data') or []):
         s = ch.get('slug', '')
@@ -258,8 +170,10 @@ def list_followed():
         pic     = lm.get('pic') or info.get('pic', ICON)
         thumb   = (lm.get('thumbnail') or pic) if is_live else pic
         label   = name + (LIVE_BADGE if is_live else '')
+        # Always Unfollow here — entry exists because slug is followed
         ctx = [(str(language(30050)),
-                'RunPlugin({})'.format(plugin.url_for(toggle_follow, slug=slug)))]
+                'RunPlugin({})'.format(
+                    plugin.url_for(toggle_follow, slug=slug, name=name, pic=pic)))]
         add_item(plugin.url_for(list_channel, slug=slug), label, thumb,
                  infoLabels={'title': label, 'plot': label},
                  icon=pic, folder=True, context_items=ctx)
@@ -273,15 +187,13 @@ def toggle_follow(slug):
     if slug in followed:
         del followed[slug]
         _save_followed(followed)
-        xbmcgui.Dialog().notification('KICK.com', str(language(30052)),
-                                      xbmcgui.NOTIFICATION_INFO, 2000, False)
+        _notify_loc(30052, ms=2000)
     else:
         name = plugin.args.get('name', slug)
         pic  = plugin.args.get('pic', ICON)
         followed[slug] = {'slug': slug, 'name': name, 'pic': pic}
         _save_followed(followed)
-        xbmcgui.Dialog().notification('KICK.com', str(language(30051)),
-                                      xbmcgui.NOTIFICATION_INFO, 2000, False)
+        _notify_loc(30051, ms=2000)
     xbmc.executebuiltin('Container.Refresh')
 
 
@@ -289,16 +201,16 @@ def toggle_follow(slug):
 def live():
     """List currently live streams (public API)."""
     # Read lang setting fresh every time so changes take effect immediately
-    if not plugin.args.get('url'):
+    url = plugin.args.get('url')
+    if not url:
         lang_val = addon.getSetting('lang') or 'all'
-        if lang_val == 'all':
-            default_url = URL_PUB_LIVESTREAMS + '?limit=100'
-        else:
-            default_url = URL_PUB_LIVESTREAMS + '?language={}&limit=100'.format(lang_val)
-    else:
-        default_url = URL_PUB_LIVESTREAMS + '?limit=100'
-    url      = plugin.args.get('url', default_url)
-    jsdata   = _pub_get(url)
+        qs = 'limit=100' + ('' if lang_val == 'all' else '&language=' + lang_val)
+        url = URL_PUB_LIVESTREAMS + '?' + qs
+    status, jsdata = pub_get_ex(url)
+    if status == ERROR:
+        _notify_loc(30105, xbmcgui.NOTIFICATION_ERROR, 4000)
+        _end_dir()
+        return
     followed = _load_followed()
     for x in (jsdata.get('data') or []):
         title_raw = clean_title(x.get('stream_title', ''))
@@ -307,21 +219,16 @@ def live():
         slug      = x.get('slug', '')
         pic       = x.get('profile_picture') or ICON
         label     = '[B]{}[/B] {} [{}]'.format(slug, title_raw, viewers)
+        plot      = '[B]{}[/B] {}'.format(slug, title_raw)
         follow_label = str(language(30050 if slug in followed else 30049))
         ctx = [(follow_label, 'RunPlugin({})'.format(
                 plugin.url_for(toggle_follow, slug=slug, name=slug, pic=pic)))]
         add_item(plugin.url_for(list_channel, slug=slug), label, thumbnail,
-                 infoLabels={'title': label, 'plot': label},
+                 infoLabels={'title': plot, 'plot': plot},
                  icon=pic, folder=True, context_items=ctx)
     cursor = (jsdata.get('pagination') or {}).get('next_cursor')
     if cursor:
-        parsed   = urlparse(url)
-        pdict    = parse_qs(parsed.query, keep_blank_values=True)
-        pdict.pop('cursor', None)
-        flat     = {k: v[0] for k, v in pdict.items()}
-        flat['cursor'] = cursor
-        next_url = parsed._replace(query=urlencode(flat)).geturl()
-        add_item(plugin.url_for(live, url=next_url),
+        add_item(plugin.url_for(live, url=_next_page_url(url, cursor)),
                  str(language(30020)), NEXT_PAGE_IMG, folder=True)
     _end_dir()
 
@@ -329,13 +236,16 @@ def live():
 @plugin.route('/channel/<slug>')
 def list_channel(slug):
     """Show channel page: live stream (if any), past VODs, and clips."""
-    jsdata = _pub_get(URL_PUB_CHANNEL + '?slug=' + quote(slug, safe=''))
+    status, jsdata = pub_get_ex(URL_PUB_CHANNEL + '?slug=' + quote(slug, safe=''))
+    if status == ERROR:
+        _notify_loc(30105, xbmcgui.NOTIFICATION_ERROR, 4000)
+        _end_dir()
+        return
     ch     = (jsdata.get('data') or [{}])[0]
 
     if not ch:
-        xbmcgui.Dialog().notification('KICK.com',
-            str(language(30042)).format(slug),
-            xbmcgui.NOTIFICATION_ERROR, 4000, False)
+        _notify(str(language(30042)).format(slug),
+                xbmcgui.NOTIFICATION_ERROR, 4000)
         _end_dir()
         return
 
@@ -343,31 +253,36 @@ def list_channel(slug):
     username    = ch.get('slug', slug)
     stream      = ch.get('stream') or {}
 
+    followed = _load_followed()
+    follow_label = str(language(30050 if slug in followed else 30049))
+    follow_ctx = [(follow_label, 'RunPlugin({})'.format(
+            plugin.url_for(toggle_follow, slug=slug, name=username, pic=pic)))]
+
     if stream.get('is_live'):
         thumbnail = stream.get('thumbnail') or ICON
         title     = clean_title(ch.get('stream_title', '')) + LIVE_BADGE
         add_item(plugin.url_for(play_video, url=slug), title, thumbnail,
                  infoLabels={'title': title, 'plot': title},
-                 IsPlayable=True)
+                 IsPlayable=True, context_items=follow_ctx)
 
     vods_label  = str(language(30024)) + username + '[/B]'
     clips_label = str(language(30025)) + username + '[/B]'
     add_item(plugin.url_for(list_vods, slug=slug),
              vods_label, pic,
              infoLabels={'title': vods_label, 'plot': vods_label},
-             folder=True)
+             folder=True, context_items=follow_ctx)
     add_item(plugin.url_for(list_clips, slug=slug),
              clips_label, pic,
              infoLabels={'title': clips_label, 'plot': clips_label},
-             folder=True)
+             folder=True, context_items=follow_ctx)
     _end_dir()
 
 
 @plugin.route('/vods/<slug>')
 def list_vods(slug):
     """List a channel's previous livestreams (VODs) via Worker proxy."""
-    vods = (_api_get(URL_PROXY_CHANNEL.format(slug=quote(slug, safe='')))
-            .get('previous_livestreams') or [])
+    data = api_get(URL_PROXY_CHANNEL.format(slug=quote(slug, safe='')))
+    vods = data.get('previous_livestreams') or []
     for x in vods:
         title_raw  = clean_title(x.get('session_title'))
         duration   = int(x.get('duration') or 0) // 1000
@@ -382,27 +297,25 @@ def list_vods(slug):
                  infoLabels={'title': title, 'plot': title, 'duration': duration},
                  IsPlayable=True)
     if not vods:
-        xbmcgui.Dialog().notification('KICK.com', str(language(30043)),
-                                      xbmcgui.NOTIFICATION_INFO, 3000, False)
+        _notify_loc(30043)
     _end_dir()
 
 
 @plugin.route('/clips/<slug>')
 def list_clips(slug):
     """List clips for the given channel slug via Worker proxy."""
-    jsdata = _api_get(URL_PROXY_CLIPS.format(slug=quote(slug, safe='')))
+    jsdata = api_get(URL_PROXY_CLIPS.format(slug=quote(slug, safe='')))
     clips = jsdata.get('clips') or []
     for x in clips:
         title     = x.get('title', '')
         thumbnail = x.get('thumbnail_url') or ICON
-        duration  = x.get('duration')
+        duration  = x.get('duration') or 0
         href      = x.get('video_url', '')
         add_item(plugin.url_for(play_video, url=href), title, thumbnail,
                  infoLabels={'title': title, 'plot': title, 'duration': duration},
                  IsPlayable=True)
     if not clips:
-        xbmcgui.Dialog().notification('KICK.com', str(language(30044)),
-                                      xbmcgui.NOTIFICATION_INFO, 3000, False)
+        _notify_loc(30044)
     _end_dir()
 
 
@@ -412,16 +325,13 @@ def play_video():
     try:
         import inputstreamhelper
     except ImportError:
-        xbmcgui.Dialog().notification('KICK.com', str(language(30046)),
-                                      xbmcgui.NOTIFICATION_ERROR, 5000)
+        _notify_loc(30046, xbmcgui.NOTIFICATION_ERROR, 5000)
         xbmcplugin.setResolvedUrl(plugin.handle, False, listitem=xbmcgui.ListItem())
         return
     raw_url = plugin.args.get('url', '')
     stream = _resolve_stream(raw_url)
     if not stream:
-        xbmcgui.Dialog().notification('KICK.com',
-            str(language(30045)),
-            xbmcgui.NOTIFICATION_ERROR, 5000, False)
+        _notify_loc(30045, xbmcgui.NOTIFICATION_ERROR, 5000)
         xbmcplugin.setResolvedUrl(plugin.handle, False, listitem=xbmcgui.ListItem())
         return
     hdz = {
@@ -447,16 +357,12 @@ def _resolve_stream(slug):
     """Resolve a slug/URL to a playable HLS stream URL, or None."""
     if slug.endswith('.mp4') or slug.endswith('.m3u8'):
         return slug
-    if slug.startswith(WORKER_BASE):
-        # Worker proxy for VOD: returns {"source": "..."}
-        data = _api_get(slug)
-        return data.get('source') or data.get('url')
     if slug.startswith('http'):
-        # Direct VOD / clip source URL
-        data = _api_get(slug)
+        # VOD / clip / worker proxy source URL
+        data = api_get(slug)
         return data.get('source') or data.get('url')
     # Channel slug: proxy the internal livestream endpoint via Worker
-    return (_api_get(URL_PROXY_STREAM.format(slug=quote(slug, safe='')))
+    return (api_get(URL_PROXY_STREAM.format(slug=quote(slug, safe='')))
             .get('data') or {}).get('playback_url')
 
 
@@ -481,7 +387,7 @@ def list_search():
     followed = _load_followed()
 
     # Exact channel slug match via public API (includes stream/live info)
-    ch_data  = _pub_get(URL_PUB_CHANNEL + '?slug=' + quote(query, safe=''))
+    ch_data  = pub_get(URL_PUB_CHANNEL + '?slug=' + quote(query, safe=''))
     channels = ch_data.get('data') or []
     for x in channels:
         slug      = x.get('slug', '')
@@ -498,7 +404,7 @@ def list_search():
                  icon=pic, folder=True, context_items=ctx)
 
     # Category search (deprecated v1 endpoint but still works)
-    cat_data = _pub_get(URL_PUB_CATEGORIES + '?q=' + quote_plus(query))
+    cat_data = pub_get(URL_PUB_CATEGORIES + '?q=' + quote_plus(query))
     cats     = cat_data.get('data') or []
     for x in cats:
         cat_id = x.get('id', '')
@@ -511,9 +417,7 @@ def list_search():
 
     _end_dir()
     if not (channels or cats):
-        xbmcgui.Dialog().notification('[COLOR yellowgreen][B]Info[/B][/COLOR]',
-                                      str(language(30029)),
-                                      xbmcgui.NOTIFICATION_INFO, 5000, False)
+        _notify_loc(30029, ms=5000)
 
 
 # ---------------------------------------------------------------------------

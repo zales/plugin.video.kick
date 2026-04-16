@@ -6,28 +6,16 @@ when live playback starts. This service picks it up and manages the WebSocket
 chat overlay in its own long-running process — avoiding the 5-second script
 kill timeout that CPythonInvoker enforces on plugin sources.
 """
-import requests
 import xbmc
 import xbmcaddon
 import xbmcgui
 import xbmcvfs
 
+from resources.lib.http import api_get, WORKER_BASE
+
 ADDON_ID = 'plugin.video.kick'
 PROP_SLUG = 'kick.chat.slug'
-WORKER_BASE = 'https://kodi.zales.dev'
 URL_PROXY_CHANNEL = WORKER_BASE + '/proxy/kick/api/v1/channels/{slug}'
-
-
-def _api_get(url):
-    try:
-        r = requests.get(url, headers={
-            'User-Agent': 'okhttp/4.9.2',
-            'Accept': 'application/json',
-        }, timeout=15)
-        r.raise_for_status()
-        return r.json()
-    except Exception:
-        return {}
 
 
 class ChatService(xbmc.Monitor):
@@ -62,8 +50,9 @@ class ChatService(xbmc.Monitor):
         from resources.lib.chat import ChatOverlay
         addon = xbmcaddon.Addon(id=ADDON_ID)
         profile = xbmcvfs.translatePath(addon.getAddonInfo('profile'))
+        position = addon.getSetting('chat_pos') or 'an3'
         self._overlay = ChatOverlay(
-            slug, _api_get, profile, WORKER_BASE, URL_PROXY_CHANNEL)
+            slug, api_get, profile, URL_PROXY_CHANNEL, position=position)
         self._overlay.start()
 
     def _stop(self):

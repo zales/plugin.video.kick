@@ -8,6 +8,7 @@ import socket
 import ssl
 import struct
 import threading
+import time
 from collections import deque
 
 import xbmc
@@ -16,6 +17,7 @@ import xbmcvfs
 LOG_PREFIX = 'KICK chat: '
 MAX_LINES = 12
 MAX_WIDTH = 80
+PING_INTERVAL = 60  # seconds between proactive pusher:ping
 
 PUSHER_KEY = '32cbd69e4b950bf97679'
 PUSHER_HOST = 'ws-us2.pusher.com'
@@ -63,6 +65,7 @@ def _ws_connect():
     ctx = ssl.create_default_context()
     raw = socket.create_connection((PUSHER_HOST, 443), timeout=15)
     sock = ctx.wrap_socket(raw, server_hostname=PUSHER_HOST)
+    sock.settimeout(15)
 
     ws_key = base64.b64encode(os.urandom(16)).decode()
     handshake = (
@@ -78,37 +81,49 @@ def _ws_connect():
 
     resp = b''
     while b'\r\n\r\n' not in resp:
-        resp += sock.recv(1)
+        chunk = sock.recv(256)
+        if not chunk:
+            raise ConnectionError('WebSocket handshake: connection closed')
+        resp += chunk
+        if len(resp) > 8192:
+            raise ConnectionError('WebSocket handshake: response too large')
     if b'101' not in resp.split(b'\r\n')[0]:
         raise ConnectionError('WebSocket handshake failed')
     return sock
 
 
 def _ws_recv(sock):
-    """Read one WebSocket frame, return payload string or None on close."""
-    header = _recv_exact(sock, 2)
-    opcode = header[0] & 0x0F
-    length = header[1] & 0x7F
+    """Read one WebSocket frame, return payload string or None on close.
 
-    if length == 126:
-        length = struct.unpack('!H', _recv_exact(sock, 2))[0]
-    elif length == 127:
-        length = struct.unpack('!Q', _recv_exact(sock, 8))[0]
+    Transparently replies to ping frames and continues until a data frame
+    (or close) arrives.
+    """
+    while True:
+        header = _recv_exact(sock, 2)
+        opcode = header[0] & 0x0F
+        length = header[1] & 0x7F
 
-    masked = (header[1] & 0x80) != 0
-    if masked:
-        mask = _recv_exact(sock, 4)
-        payload = _recv_exact(sock, length)
-        payload = bytes(b ^ mask[i % 4] for i, b in enumerate(payload))
-    else:
-        payload = _recv_exact(sock, length)
+        if length == 126:
+            length = struct.unpack('!H', _recv_exact(sock, 2))[0]
+        elif length == 127:
+            length = struct.unpack('!Q', _recv_exact(sock, 8))[0]
 
-    if opcode == 0x8:  # close
-        return None
-    if opcode == 0x9:  # ping
-        _ws_send(sock, payload, opcode=0xA)  # pong
-        return _ws_recv(sock)
-    return payload.decode('utf-8')
+        masked = (header[1] & 0x80) != 0
+        if masked:
+            mask = _recv_exact(sock, 4)
+            payload = _recv_exact(sock, length)
+            payload = bytes(b ^ mask[i % 4] for i, b in enumerate(payload))
+        else:
+            payload = _recv_exact(sock, length) if length else b''
+
+        if opcode == 0x8:  # close
+            return None
+        if opcode == 0x9:  # ping
+            _ws_send(sock, payload, opcode=0xA)  # pong
+            continue
+        if opcode == 0xA:  # pong
+            continue
+        return payload.decode('utf-8', errors='replace')
 
 
 def _ws_send(sock, data, opcode=0x1):
@@ -137,12 +152,12 @@ def _ws_send(sock, data, opcode=0x1):
 class ChatOverlay:
     """Connect to Kick chat via Pusher WebSocket, render as SRT subtitles."""
 
-    def __init__(self, slug, api_get_func, profile_dir, worker_base, channel_url_tpl):
+    def __init__(self, slug, api_get_func, profile_dir, channel_url_tpl, position='an3'):
         self._slug = slug
         self._api_get = api_get_func
         self._profile = profile_dir
-        self._worker_base = worker_base
         self._channel_url_tpl = channel_url_tpl
+        self._position = position if position in ('an1', 'an2', 'an3') else 'an3'
         self._lines = deque(maxlen=MAX_LINES)
         self._sub_path = os.path.join(profile_dir, 'chat.srt')
         self._stop = threading.Event()
@@ -201,7 +216,17 @@ class ChatOverlay:
             player.setSubtitles(self._sub_path)
 
             self._ws.settimeout(1.0)
+            last_ping = time.time()
             while not self._stop.is_set() and player.isPlaying():
+                # Proactive keepalive — Pusher closes idle conns after ~120s
+                now = time.time()
+                if now - last_ping >= PING_INTERVAL:
+                    try:
+                        _ws_send(self._ws, json.dumps(
+                            {'event': 'pusher:ping', 'data': {}}))
+                        last_ping = now
+                    except Exception:
+                        break
                 try:
                     raw = _ws_recv(self._ws)
                 except socket.timeout:
@@ -220,6 +245,8 @@ class ChatOverlay:
                 # Pusher ping
                 if event_name == 'pusher:ping':
                     _ws_send(self._ws, json.dumps({'event': 'pusher:pong', 'data': {}}))
+                    continue
+                if event_name == 'pusher:pong':
                     continue
 
                 # Chat message
@@ -260,7 +287,7 @@ class ChatOverlay:
 
     def _update_srt(self, player):
         body = '\n'.join(self._lines)
-        srt = '1\n00:00:00,000 --> 09:59:59,000\n{\\an3}%s\n' % body
+        srt = '1\n00:00:00,000 --> 99:59:59,000\n{\\%s}%s\n' % (self._position, body)
         self._write_srt(srt)
         player.setSubtitles(self._sub_path)
 

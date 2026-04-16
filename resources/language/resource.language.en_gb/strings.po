@@ -301,3 +301,23 @@ msgstr "Yoruba"
 msgctxt "#30100"
 msgid "Zulu"
 msgstr "Zulu"
+
+msgctxt "#30059"
+msgid "Chat position"
+msgstr "Chat position"
+
+msgctxt "#30101"
+msgid "Left"
+msgstr "Left"
+
+msgctxt "#30102"
+msgid "Center"
+msgstr "Center"
+
+msgctxt "#30103"
+msgid "Right"
+msgstr "Right"
+
+msgctxt "#30105"
+msgid "Network error"
+msgstr "Network error"

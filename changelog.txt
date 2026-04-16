@@ -1,3 +1,21 @@
+3.1.0
+- refactor: shared HTTP layer in resources/lib/http.py (plugin + service reuse it)
+- refactor: helpers in resources/lib/utils.py (clean_title, pagination, followed store)
+- feat: user-facing error notification on network/API failure (distinct from empty list)
+- feat: chat position setting (left/center/right), visible only when chat overlay is on
+- fix: chat SRT cue extended to 99:59:59 — survives 24/7 streams
+- fix: ICON and FOLLOWED_FILE use os.path.join (no more relative path tricks)
+- fix: live list InfoTag title/plot no longer contains viewer count (label-only)
+- chore: removed duplicate _api_get/_pub_get implementations
+- chore: new strings #30059, #30101-30103, #30105 added to all 32 locales (en/cs/pl filled)
+
+3.0.2
+- fix: follow/unfollow context menu now available on channel page
+- fix: followed list passes channel name/pic to toggle action (keeps metadata)
+- fix: WebSocket handshake reads in chunks with explicit socket timeout
+- fix: ping frames handled iteratively (no recursion) + proactive pusher:ping keepalive every 60s
+- refactor: simplified live() language + pagination URL logic
+
 3.0.1
 - fix: chat overlay moved to background service — fixes CPythonInvoker 5s kill on Android
 - fix: plugin script returns immediately after setResolvedUrl

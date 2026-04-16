@@ -69,6 +69,25 @@
                     <control type="toggle"/>
                 </setting>
 
+                <setting id="chat_pos" type="string" label="30059">
+                    <level>0</level>
+                    <default>an3</default>
+                    <constraints>
+                        <allowempty>false</allowempty>
+                        <options>
+                            <option label="30101">an1</option>
+                            <option label="30102">an2</option>
+                            <option label="30103">an3</option>
+                        </options>
+                    </constraints>
+                    <control type="spinner" format="string"/>
+                    <dependencies>
+                        <dependency type="visible">
+                            <condition operator="is" setting="chat">true</condition>
+                        </dependency>
+                    </dependencies>
+                </setting>
+
             </group>
         </category>
     </section>

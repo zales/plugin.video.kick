@@ -8,6 +8,9 @@
  *
  * Secrets (wrangler secret put):
  *   KICK_CLIENT_SECRET — Kick Developer App client secret
+ *
+ * Rate limiting is handled at the Cloudflare edge (WAF rate-limiting rules),
+ * not in the Worker itself — per-isolate in-memory counters are unreliable.
  */
 
 const KICK_CLIENT_ID = '01KP3R6VR8RWSF3GAMAJNF0JSM';
@@ -17,79 +20,70 @@ const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Max-Age': '86400',
 };
 
-// ---------------------------------------------------------------------------
-// Simple in-memory sliding-window rate limiter (per-IP, per isolate).
-// Not shared across Workers isolates, but sufficient to block obvious abuse.
-// ---------------------------------------------------------------------------
-const RATE_WINDOW_MS = 60_000;   // 1 minute
-const RATE_MAX_HITS  = 60;       // max requests per window
-const _hits = new Map();         // ip -> [timestamp, ...]
+const PROXY_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ' +
+                 '(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
 
-function _rateOk(ip) {
-  const now = Date.now();
-  let timestamps = _hits.get(ip);
-  if (!timestamps) {
-    timestamps = [];
-    _hits.set(ip, timestamps);
-  }
-  // Evict entries older than the window
-  while (timestamps.length && timestamps[0] <= now - RATE_WINDOW_MS)
-    timestamps.shift();
-  if (timestamps.length >= RATE_MAX_HITS) return false;
-  timestamps.push(now);
-  // Prevent memory leak: drop IPs with no recent hits (lazy GC)
-  if (_hits.size > 10_000) {
-    for (const [k, v] of _hits) {
-      if (!v.length) _hits.delete(k);
-      if (_hits.size <= 5_000) break;
-    }
-  }
-  return true;
+function jsonResponse(data, status = 200, extra = {}) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { 'Content-Type': 'application/json', ...CORS_HEADERS, ...extra },
+  });
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+  ));
 }
 
 export default {
   async fetch(request, env) {
-    const url     = new URL(request.url);
-    let path      = decodeURIComponent(url.pathname);
+    const url = new URL(request.url);
+    let path;
+    try {
+      path = decodeURIComponent(url.pathname);
+    } catch {
+      path = url.pathname;
+    }
 
     if (request.method === 'OPTIONS')
       return new Response(null, { status: 204, headers: CORS_HEADERS });
 
-    // Rate-limit proxied / token endpoints (R2 serving is unlimited)
-    const clientIp = request.headers.get('CF-Connecting-IP') || 'unknown';
-    if ((path === '/app-token' || path.startsWith('/proxy/')) && !_rateOk(clientIp))
-      return new Response(JSON.stringify({ error: 'rate_limited' }), {
-        status: 429,
-        headers: { 'Content-Type': 'application/json', 'Retry-After': '60', ...CORS_HEADERS },
-      });
-
     // GET /app-token — returns cached client_credentials Bearer token for Kick public API
     if (path === '/app-token') {
-      let appToken = await env.AUTH_RELAY.get('app_token');
-      if (!appToken) {
-        const resp = await fetch(KICK_TOKEN_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: new URLSearchParams({
-            grant_type:    'client_credentials',
-            client_id:     KICK_CLIENT_ID,
-            client_secret: env.KICK_CLIENT_SECRET,
-          }).toString(),
-        });
-        const data = await resp.json();
-        appToken = data.access_token;
-        if (!appToken)
-          return new Response(JSON.stringify({ error: 'token_fetch_failed' }), {
-            status: 500, headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
+      try {
+        let appToken = await env.AUTH_RELAY.get('app_token');
+        if (!appToken) {
+          const resp = await fetch(KICK_TOKEN_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({
+              grant_type:    'client_credentials',
+              client_id:     KICK_CLIENT_ID,
+              client_secret: env.KICK_CLIENT_SECRET,
+            }).toString(),
           });
-        const ttl = Math.min(Math.max(120, (data.expires_in || 3600) - 120), 86400);
-        await env.AUTH_RELAY.put('app_token', appToken, { expirationTtl: ttl });
+          if (!resp.ok) {
+            console.log('app-token upstream', resp.status);
+            return jsonResponse({ error: 'token_upstream_error', status: resp.status }, 502);
+          }
+          let data;
+          try { data = await resp.json(); }
+          catch (e) { return jsonResponse({ error: 'token_invalid_json' }, 502); }
+          appToken = data.access_token;
+          if (!appToken)
+            return jsonResponse({ error: 'token_fetch_failed' }, 500);
+          const ttl = Math.min(Math.max(120, (data.expires_in || 3600) - 120), 86400);
+          await env.AUTH_RELAY.put('app_token', appToken, { expirationTtl: ttl });
+        }
+        return jsonResponse({ token: appToken });
+      } catch (e) {
+        console.log('app-token error', e && e.message);
+        return jsonResponse({ error: 'internal' }, 500);
       }
-      return new Response(JSON.stringify({ token: appToken }), {
-        headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
-      });
     }
 
     // GET /proxy/kick/* — proxy kick.com internal API with browser-like headers
@@ -100,20 +94,36 @@ export default {
       if (!/^\/(api\/v1|api\/v2|stream)\//.test(kickPath))
         return new Response('Forbidden', { status: 403, headers: CORS_HEADERS });
       const targetUrl = 'https://kick.com' + kickPath + (url.search || '');
-      const upstreamResp = await fetch(targetUrl, {
-        headers: {
-          'Accept':          'application/json',
-          'Accept-Language': 'en-US,en;q=0.9',
-          'User-Agent':      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-          'Referer':         'https://kick.com/',
-          'Origin':          'https://kick.com',
-        },
-      });
-      const body = await upstreamResp.text();
-      return new Response(body, {
-        status: upstreamResp.status,
-        headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
-      });
+      try {
+        const upstreamResp = await fetch(targetUrl, {
+          headers: {
+            'Accept':          'application/json',
+            'Accept-Language': 'en-US,en;q=0.9',
+            'User-Agent':      PROXY_UA,
+            'Referer':         'https://kick.com/',
+            'Origin':          'https://kick.com',
+          },
+          cf: { cacheEverything: false },
+        });
+        const body = await upstreamResp.text();
+        const upstreamCt = upstreamResp.headers.get('Content-Type') || '';
+        // Kick WAF sometimes returns HTML — propagate as 502 so the client
+        // can show a proper error instead of silently parsing empty JSON.
+        const looksJson = upstreamCt.includes('json') ||
+                          body.startsWith('{') || body.startsWith('[');
+        if (!looksJson) {
+          console.log('proxy non-json', upstreamResp.status, upstreamCt, targetUrl);
+          return jsonResponse(
+            { error: 'upstream_non_json', status: upstreamResp.status }, 502);
+        }
+        return new Response(body, {
+          status: upstreamResp.status,
+          headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
+        });
+      } catch (e) {
+        console.log('proxy error', e && e.message, targetUrl);
+        return jsonResponse({ error: 'proxy_failed' }, 502);
+      }
     }
 
     // R2 repository browser
@@ -168,15 +178,27 @@ export default {
     let rows = '';
     if (key) {
       const parent = '/' + key.split('/').slice(0, -2).join('/');
-      rows += '<tr><td><a href="' + (parent || '/') + '">../</a></td><td>-</td><td>-</td></tr>\n';
+      const href = escapeHtml(parent || '/');
+      rows += '<tr><td><a href="' + href + '">../</a></td><td>-</td><td>-</td></tr>\n';
     }
-    for (const d of (listed.delimitedPrefixes || []))
-      rows += '<tr><td><a href="/' + d + '">' + d.replace(key, '') + '</a></td><td>-</td><td>-</td></tr>\n';
-    for (const obj of (listed.objects || []))
-      rows += '<tr><td><a href="/' + obj.key + '">' + obj.key.replace(key, '') + '</a></td><td>' + (obj.uploaded ? obj.uploaded.toUTCString() : '-') + '</td><td>' + obj.size + '</td></tr>\n';
+    for (const d of (listed.delimitedPrefixes || [])) {
+      const href = escapeHtml('/' + d);
+      const label = escapeHtml(d.replace(key, ''));
+      rows += '<tr><td><a href="' + href + '">' + label + '</a></td><td>-</td><td>-</td></tr>\n';
+    }
+    for (const obj of (listed.objects || [])) {
+      const href = escapeHtml('/' + obj.key);
+      const label = escapeHtml(obj.key.replace(key, ''));
+      const mtime = obj.uploaded ? obj.uploaded.toUTCString() : '-';
+      rows += '<tr><td><a href="' + href + '">' + label + '</a></td><td>' + mtime + '</td><td>' + obj.size + '</td></tr>\n';
+    }
 
+    const title = escapeHtml('Index of ' + dirPath);
     return new Response(
-      '<!DOCTYPE HTML><html><head><title>Index of ' + dirPath + '</title></head><body><h1>Index of ' + dirPath + '</h1><table><tr><th>Name</th><th>Last modified</th><th>Size</th></tr><tr><td colspan="3"><hr></td></tr>' + rows + '<tr><td colspan="3"><hr></td></tr></table></body></html>',
+      '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' + title + '</title></head>' +
+      '<body><h1>' + title + '</h1><table><tr><th>Name</th><th>Last modified</th><th>Size</th></tr>' +
+      '<tr><td colspan="3"><hr></td></tr>' + rows +
+      '<tr><td colspan="3"><hr></td></tr></table></body></html>',
       { headers: { 'Content-Type': 'text/html; charset=utf-8' } }
     );
   },
