@@ -1,3 +1,12 @@
+3.0.0
+- feat: real-time chat overlay via Pusher WebSocket (replaces REST polling)
+- feat: stdlib-only WebSocket client (no external dependencies)
+- perf: instant message delivery instead of 1s polling interval
+
+2.7.0
+- feat: live chat overlay (SRT subtitles, toggle in settings)
+- feat: per-IP rate limiting on worker proxy
+
 2.6.12
 - fix: settings section/category/group structure — settings dialog now shows correctly
 - fix: lang spinner uses numeric string IDs (#30060-30100) — no crash on Kodi 21

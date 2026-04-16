@@ -1,7 +1,12 @@
 # -*- coding: utf-8 -*-
-"""Kick chat overlay using SRT subtitles — simple, no blink."""
+"""Kick chat overlay via Pusher WebSocket + SRT subtitles."""
+import base64
+import json
 import os
 import re
+import socket
+import ssl
+import struct
 import threading
 from collections import deque
 
@@ -10,6 +15,11 @@ import xbmcvfs
 
 LOG_PREFIX = 'KICK chat: '
 MAX_LINES = 12
+MAX_WIDTH = 80
+
+PUSHER_KEY = '32cbd69e4b950bf97679'
+PUSHER_HOST = 'ws-us2.pusher.com'
+PUSHER_PATH = '/app/%s?protocol=7&client=js&version=8.4.0-rc2&flash=false' % PUSHER_KEY
 
 
 def _safe(text):
@@ -18,10 +28,114 @@ def _safe(text):
     return t.replace('<', '').replace('>', '').replace('\n', ' ')
 
 
-class ChatOverlay:
-    """Poll Kick chat via REST and display as SRT subtitles."""
+def _wrap(text, width=MAX_WIDTH):
+    """Word-wrap text to max width."""
+    words = text.split(' ')
+    lines = []
+    cur = ''
+    for w in words:
+        if cur and len(cur) + 1 + len(w) > width:
+            lines.append(cur)
+            cur = w
+        else:
+            cur = (cur + ' ' + w) if cur else w
+    if cur:
+        lines.append(cur)
+    return '\n'.join(lines)
 
-    POLL_INTERVAL = 1.0
+
+# ---------------------------------------------------------------------------
+# Minimal WebSocket client (stdlib only, no dependencies)
+# ---------------------------------------------------------------------------
+
+def _recv_exact(sock, n):
+    data = b''
+    while len(data) < n:
+        chunk = sock.recv(n - len(data))
+        if not chunk:
+            raise ConnectionError('WebSocket closed')
+        data += chunk
+    return data
+
+
+def _ws_connect():
+    """Open a WebSocket connection to Pusher, return the ssl socket."""
+    ctx = ssl.create_default_context()
+    raw = socket.create_connection((PUSHER_HOST, 443), timeout=15)
+    sock = ctx.wrap_socket(raw, server_hostname=PUSHER_HOST)
+
+    ws_key = base64.b64encode(os.urandom(16)).decode()
+    handshake = (
+        'GET %s HTTP/1.1\r\n'
+        'Host: %s\r\n'
+        'Upgrade: websocket\r\n'
+        'Connection: Upgrade\r\n'
+        'Sec-WebSocket-Key: %s\r\n'
+        'Sec-WebSocket-Version: 13\r\n'
+        '\r\n'
+    ) % (PUSHER_PATH, PUSHER_HOST, ws_key)
+    sock.sendall(handshake.encode())
+
+    resp = b''
+    while b'\r\n\r\n' not in resp:
+        resp += sock.recv(1)
+    if b'101' not in resp.split(b'\r\n')[0]:
+        raise ConnectionError('WebSocket handshake failed')
+    return sock
+
+
+def _ws_recv(sock):
+    """Read one WebSocket frame, return payload string or None on close."""
+    header = _recv_exact(sock, 2)
+    opcode = header[0] & 0x0F
+    length = header[1] & 0x7F
+
+    if length == 126:
+        length = struct.unpack('!H', _recv_exact(sock, 2))[0]
+    elif length == 127:
+        length = struct.unpack('!Q', _recv_exact(sock, 8))[0]
+
+    masked = (header[1] & 0x80) != 0
+    if masked:
+        mask = _recv_exact(sock, 4)
+        payload = _recv_exact(sock, length)
+        payload = bytes(b ^ mask[i % 4] for i, b in enumerate(payload))
+    else:
+        payload = _recv_exact(sock, length)
+
+    if opcode == 0x8:  # close
+        return None
+    if opcode == 0x9:  # ping
+        _ws_send(sock, payload, opcode=0xA)  # pong
+        return _ws_recv(sock)
+    return payload.decode('utf-8')
+
+
+def _ws_send(sock, data, opcode=0x1):
+    """Send a masked WebSocket frame."""
+    if isinstance(data, str):
+        data = data.encode('utf-8')
+    mask = os.urandom(4)
+    masked = bytes(b ^ mask[i % 4] for i, b in enumerate(data))
+
+    header = bytes([0x80 | opcode])
+    length = len(data)
+    if length < 126:
+        header += bytes([0x80 | length])
+    elif length < 65536:
+        header += bytes([0x80 | 126]) + struct.pack('!H', length)
+    else:
+        header += bytes([0x80 | 127]) + struct.pack('!Q', length)
+
+    sock.sendall(header + mask + masked)
+
+
+# ---------------------------------------------------------------------------
+# Chat overlay
+# ---------------------------------------------------------------------------
+
+class ChatOverlay:
+    """Connect to Kick chat via Pusher WebSocket, render as SRT subtitles."""
 
     def __init__(self, slug, api_get_func, profile_dir, worker_base, channel_url_tpl):
         self._slug = slug
@@ -29,10 +143,8 @@ class ChatOverlay:
         self._profile = profile_dir
         self._worker_base = worker_base
         self._channel_url_tpl = channel_url_tpl
-        self._seen_ids = set()
         self._lines = deque(maxlen=MAX_LINES)
         self._sub_path = os.path.join(profile_dir, 'chat.srt')
-        self._subs_loaded = False
         xbmcvfs.mkdirs(profile_dir)
 
     def start(self):
@@ -42,6 +154,7 @@ class ChatOverlay:
         from urllib.parse import quote
         player = xbmc.Player()
 
+        # Wait for playback
         for _ in range(30):
             if player.isPlaying():
                 break
@@ -49,70 +162,100 @@ class ChatOverlay:
         if not player.isPlaying():
             return
 
+        # Resolve chatroom_id (Pusher uses chatroom.id, not channel id)
         ch_data = self._api_get(
             self._channel_url_tpl.format(slug=quote(self._slug, safe='')))
-        channel_id = ch_data.get('id')
-        if not channel_id:
-            xbmc.log(LOG_PREFIX + 'no channel id for ' + self._slug, xbmc.LOGWARNING)
+        chatroom_id = (ch_data.get('chatroom') or {}).get('id')
+        if not chatroom_id:
+            xbmc.log(LOG_PREFIX + 'no chatroom id for ' + self._slug, xbmc.LOGWARNING)
             return
 
-        url = '%s/proxy/kick/api/v2/channels/%s/messages' % (
-            self._worker_base, channel_id)
-        xbmc.log(LOG_PREFIX + 'started for %s (id=%s)' % (self._slug, channel_id),
-                 xbmc.LOGINFO)
+        channel = 'chatrooms.%s.v2' % chatroom_id
+        xbmc.log(LOG_PREFIX + 'connecting WS for %s (chatroom=%s)' % (
+            self._slug, chatroom_id), xbmc.LOGINFO)
 
-        # Write initial empty SRT and load it once
-        self._write_srt('')
-        player.setSubtitles(self._sub_path)
-        self._subs_loaded = True
-
-        while player.isPlaying():
-            try:
-                self._poll(player, url)
-            except Exception as exc:
-                xbmc.log(LOG_PREFIX + 'poll error: %s' % exc, xbmc.LOGWARNING)
-            for _ in range(int(self.POLL_INTERVAL * 4)):
-                if not player.isPlaying():
-                    break
-                xbmc.sleep(250)
-
+        ws = None
         try:
-            xbmcvfs.delete(self._sub_path)
-        except Exception:
-            pass
-        xbmc.log(LOG_PREFIX + 'stopped', xbmc.LOGINFO)
+            ws = _ws_connect()
+            # Read connection_established
+            _ws_recv(ws)
+            # Subscribe
+            _ws_send(ws, json.dumps({
+                'event': 'pusher:subscribe',
+                'data': {'channel': channel}
+            }))
+            xbmc.log(LOG_PREFIX + 'subscribed to ' + channel, xbmc.LOGINFO)
 
-    def _poll(self, player, url):
-        data = self._api_get(url)
-        messages = (data.get('data') or {}).get('messages') or []
-
-        new_count = 0
-        for msg in messages:
-            mid = msg.get('id', '')
-            if mid in self._seen_ids:
-                continue
-            self._seen_ids.add(mid)
-            sender = msg.get('sender') or {}
-            username = _safe(sender.get('username') or '???')
-            color = (sender.get('identity') or {}).get('color', '#FFFFFF').lstrip('#')
-            content = _safe(msg.get('content', ''))
-            if not content:
-                continue
-            line = '<font color="#%s">%s:</font> %s' % (color, username, content)
-            self._lines.append(line)
-            new_count += 1
-
-        if new_count > 0:
-            # Build one SRT entry spanning 0:00:00 → 9:59:59
-            body = '\n'.join(self._lines)
-            srt = '1\n00:00:00,000 --> 09:59:59,000\n%s\n' % body
-            self._write_srt(srt)
-            # Reload subs so Kodi picks up the new content
+            # Set initial empty subtitle
+            self._write_srt('')
             player.setSubtitles(self._sub_path)
+
+            ws.settimeout(1.0)
+            while player.isPlaying():
+                try:
+                    raw = _ws_recv(ws)
+                except socket.timeout:
+                    continue
+                except Exception:
+                    break
+                if raw is None:
+                    break
+                try:
+                    evt = json.loads(raw)
+                except Exception:
+                    continue
+
+                event_name = evt.get('event', '')
+
+                # Pusher ping
+                if event_name == 'pusher:ping':
+                    _ws_send(ws, json.dumps({'event': 'pusher:pong', 'data': {}}))
+                    continue
+
+                # Chat message
+                if 'ChatMessage' not in event_name:
+                    continue
+
+                try:
+                    data = json.loads(evt.get('data', '{}'))
+                except Exception:
+                    continue
+
+                username = _safe((data.get('sender') or {}).get('username', '???'))
+                color = ((data.get('sender') or {}).get('identity') or {}).get(
+                    'color', '#FFFFFF').lstrip('#')
+                content = _safe(data.get('content', ''))
+                if not content:
+                    continue
+
+                line = '<font size="10"><font color="#%s">%s:</font> %s</font>' % (
+                    color, username, content)
+                self._lines.append(_wrap(line))
+                self._update_srt(player)
+
+        except Exception as exc:
+            xbmc.log(LOG_PREFIX + 'WS error: %s' % exc, xbmc.LOGWARNING)
+        finally:
+            if ws:
+                try:
+                    ws.close()
+                except Exception:
+                    pass
+            try:
+                xbmcvfs.delete(self._sub_path)
+            except Exception:
+                pass
+            xbmc.log(LOG_PREFIX + 'stopped', xbmc.LOGINFO)
+
+    def _update_srt(self, player):
+        body = '\n'.join(self._lines)
+        srt = '1\n00:00:00,000 --> 09:59:59,000\n{\\an3}%s\n' % body
+        self._write_srt(srt)
+        player.setSubtitles(self._sub_path)
 
     def _write_srt(self, content):
         try:
-            with open(self._sub_path, 'w', encoding='utf-8') as f:
+            with open(self._sub_path, 'w', encoding='utf-8-sig') as f:
                 f.write(content)
         except Exception as exc:
             xbmc.log(LOG_PREFIX + 'write error: %s' % exc, xbmc.LOGWARNING)
