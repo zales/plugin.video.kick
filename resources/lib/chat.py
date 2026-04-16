@@ -9,6 +9,7 @@ import ssl
 import struct
 import threading
 import time
+import uuid as _uuid
 from collections import deque
 
 import xbmc
@@ -159,10 +160,16 @@ class ChatOverlay:
         self._channel_url_tpl = channel_url_tpl
         self._position = position if position in ('an1', 'an2', 'an3') else 'an3'
         self._lines = deque(maxlen=MAX_LINES)
-        self._sub_path = os.path.join(profile_dir, 'chat.srt')
+        # Unique filename per session — Kodi caches parsed subtitle tracks by
+        # path, so changing only the file contents does not re-apply override
+        # tags like {\an1}. New path forces a fresh parse.
+        fname = 'chat-{}.srt'.format(_uuid.uuid4().hex[:8])
+        self._sub_path = os.path.join(profile_dir, fname)
         self._stop = threading.Event()
         self._ws = None
         xbmcvfs.mkdirs(profile_dir)
+        xbmc.log(LOG_PREFIX + 'overlay init position={} file={}'.format(
+            self._position, fname), xbmc.LOGINFO)
 
     def start(self):
         threading.Thread(target=self._run, daemon=True).start()
@@ -211,9 +218,9 @@ class ChatOverlay:
             }))
             xbmc.log(LOG_PREFIX + 'subscribed to ' + channel, xbmc.LOGINFO)
 
-            # Set initial empty subtitle
-            self._write_srt('')
-            player.setSubtitles(self._sub_path)
+            # Defer first setSubtitles() until we have a real cue — loading an
+            # empty file caches a track with no override tag and Kodi then
+            # ignores {\anN} on subsequent reloads of the same path.
 
             self._ws.settimeout(1.0)
             last_ping = time.time()

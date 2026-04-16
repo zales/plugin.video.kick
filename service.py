@@ -50,7 +50,9 @@ class ChatService(xbmc.Monitor):
         from resources.lib.chat import ChatOverlay
         addon = xbmcaddon.Addon(id=ADDON_ID)
         profile = xbmcvfs.translatePath(addon.getAddonInfo('profile'))
-        position = addon.getSetting('chat_pos') or 'an3'
+        position = (addon.getSetting('chat_pos') or 'an3').strip()
+        xbmc.log('KICK service: chat_pos setting = {!r}'.format(position),
+                 xbmc.LOGINFO)
         self._overlay = ChatOverlay(
             slug, api_get, profile, URL_PROXY_CHANNEL, position=position)
         self._overlay.start()

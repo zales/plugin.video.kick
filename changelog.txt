@@ -1,3 +1,10 @@
+3.1.1
+- fix: chat position setting now takes effect — each session writes a unique SRT
+  filename so Kodi re-parses the {\an1|an2|an3} override tag instead of caching
+  the first-loaded track's position
+- fix: skip initial empty SRT write (was causing Kodi to cache 'no override')
+- chore: log selected chat position on overlay start (aids debugging)
+
 3.1.0
 - refactor: shared HTTP layer in resources/lib/http.py (plugin + service reuse it)
 - refactor: helpers in resources/lib/utils.py (clean_title, pagination, followed store)
