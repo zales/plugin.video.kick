@@ -160,7 +160,7 @@ class ChatOverlay:
         self._profile = profile_dir
         self._channel_url_tpl = channel_url_tpl
         self._position = position if position in ('an1', 'an2', 'an3') else 'an3'
-        self._size = size if isinstance(size, int) and 4 <= size <= 40 else 10
+        self._size = size if isinstance(size, int) and 4 <= size <= 80 else 10
         self._lines = deque(maxlen=MAX_LINES)
         # Unique filename per session — Kodi caches parsed subtitle tracks by
         # path, so changing only the file contents does not re-apply override
@@ -193,16 +193,9 @@ class ChatOverlay:
         self._rotate_and_refresh('position=%s' % pos)
 
     def set_size(self, size):
-        """Update font size of existing chat lines at runtime."""
-        if not isinstance(size, int) or size == self._size or not (4 <= size <= 40):
+        """Update font size at runtime."""
+        if not isinstance(size, int) or size == self._size or not (4 <= size <= 80):
             return
-        # Rewrite already-cached lines with the new font size so the overlay
-        # updates even before the next chat message arrives.
-        new_lines = deque(maxlen=MAX_LINES)
-        for ln in self._lines:
-            new_lines.append(re.sub(
-                r'<font size="\d+">', '<font size="%d">' % size, ln, count=1))
-        self._lines = new_lines
         self._size = size
         self._rotate_and_refresh('size=%s' % size)
 
@@ -314,8 +307,8 @@ class ChatOverlay:
                 if not content:
                     continue
 
-                line = '<font size="%d"><font color="#%s">%s:</font> %s</font>' % (
-                    self._size, color, username, content)
+                line = '<font color="#%s">%s:</font> %s' % (
+                    color, username, content)
                 self._lines.append(_wrap(line))
                 self._update_srt(player)
 
@@ -336,7 +329,10 @@ class ChatOverlay:
 
     def _update_srt(self, player):
         body = '\n'.join(self._lines)
-        srt = '1\n00:00:00,000 --> 99:59:59,000\n{\\%s}%s\n' % (self._position, body)
+        # ASS override tags: \anN = alignment, \fsN = font size. Kodi's libass
+        # honors these inside SRT; HTML <font size> is ignored.
+        srt = '1\n00:00:00,000 --> 99:59:59,000\n{\\%s\\fs%d}%s\n' % (
+            self._position, self._size, body)
         self._write_srt(srt)
         player.setSubtitles(self._sub_path)
 

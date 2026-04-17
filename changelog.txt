@@ -1,3 +1,8 @@
+3.2.1
+- fix: chat font size setting had no effect — Kodi's libass ignores HTML <font size>.
+  Switched to ASS \fs override tag which is properly honored.
+- change: font size values rescaled to 20/25/30/40/60 (ASS PlayResY-relative units).
+
 3.2.0
 - feat: chat font size setting (Tiny/Small/Medium/Large/Huge, 8-16pt)
 - feat: font-size change applies live during playback — no stream restart needed

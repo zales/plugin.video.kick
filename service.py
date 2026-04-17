@@ -35,11 +35,11 @@ class ChatService(xbmc.Monitor):
         if position not in ('an1', 'an2', 'an3'):
             position = 'an3'
         try:
-            size = int((addon.getSetting('chat_size') or '10').strip())
+            size = int((addon.getSetting('chat_size') or '30').strip())
         except ValueError:
-            size = 10
-        if size not in (8, 10, 12, 14, 16):
-            size = 10
+            size = 30
+        if not (4 <= size <= 80):
+            size = 30
         return enabled, position, size
 
     def onSettingsChanged(self):
