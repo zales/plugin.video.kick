@@ -23,7 +23,39 @@ class ChatService(xbmc.Monitor):
         super().__init__()
         self._overlay = None
         self._window = xbmcgui.Window(10000)
+        self._current_slug = None
 
+    # ------------------------------------------------------------------
+    # Settings helpers
+    # ------------------------------------------------------------------
+    def _read_settings(self):
+        addon = xbmcaddon.Addon(id=ADDON_ID)
+        enabled = addon.getSetting('chat') == 'true'
+        position = (addon.getSetting('chat_pos') or 'an3').strip()
+        if position not in ('an1', 'an2', 'an3'):
+            position = 'an3'
+        return enabled, position
+
+    def onSettingsChanged(self):
+        """Re-apply chat settings live — called by Kodi on settings save."""
+        enabled, position = self._read_settings()
+        xbmc.log(
+            'KICK service: onSettingsChanged chat=%s pos=%s slug=%s overlay=%s'
+            % (enabled, position, self._current_slug,
+               'yes' if self._overlay else 'no'),
+            xbmc.LOGINFO,
+        )
+        player = xbmc.Player()
+        if enabled:
+            if self._overlay is None and self._current_slug and player.isPlaying():
+                self._start(self._current_slug, position=position)
+            elif self._overlay is not None:
+                self._overlay.set_position(position)
+        else:
+            if self._overlay is not None:
+                self._stop()
+
+    # ------------------------------------------------------------------
     def run(self):
         xbmc.log('KICK service: started', xbmc.LOGINFO)
         player = xbmc.Player()
@@ -37,21 +69,25 @@ class ChatService(xbmc.Monitor):
             # New chat request
             if slug and self._overlay is None:
                 self._window.clearProperty(PROP_SLUG)
-                self._start(slug)
+                self._current_slug = slug
+                enabled, position = self._read_settings()
+                if enabled:
+                    self._start(slug, position=position)
 
-            # Playback stopped — tear down overlay
-            if self._overlay and not player.isPlaying():
-                self._stop()
+            # Playback stopped — tear down overlay + forget slug
+            if not player.isPlaying():
+                if self._overlay:
+                    self._stop()
+                self._current_slug = None
 
         self._stop()
         xbmc.log('KICK service: stopped', xbmc.LOGINFO)
 
-    def _start(self, slug):
+    def _start(self, slug, position='an3'):
         from resources.lib.chat import ChatOverlay
         addon = xbmcaddon.Addon(id=ADDON_ID)
         profile = xbmcvfs.translatePath(addon.getAddonInfo('profile'))
-        position = (addon.getSetting('chat_pos') or 'an3').strip()
-        xbmc.log('KICK service: chat_pos setting = {!r}'.format(position),
+        xbmc.log('KICK service: starting overlay slug=%s pos=%s' % (slug, position),
                  xbmc.LOGINFO)
         self._overlay = ChatOverlay(
             slug, api_get, profile, URL_PROXY_CHANNEL, position=position)

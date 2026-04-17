@@ -1,3 +1,9 @@
+3.1.2
+- feat: chat settings now apply live during playback — no need to restart stream
+  - changing chat position (left/center/right) rewrites overlay with new alignment
+  - toggling chat overlay off stops it immediately; toggling on starts it mid-stream
+- chore: main.py always hands off live slug to service (enables mid-playback toggle)
+
 3.1.1
 - fix: chat position setting now takes effect — each session writes a unique SRT
   filename so Kodi re-parses the {\an1|an2|an3} override tag instead of caching

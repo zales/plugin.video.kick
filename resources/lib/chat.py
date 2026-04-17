@@ -183,6 +183,29 @@ class ChatOverlay:
             except Exception:
                 pass
 
+    def set_position(self, pos):
+        """Update on-screen position of the chat overlay at runtime."""
+        if pos not in ('an1', 'an2', 'an3') or pos == self._position:
+            return
+        self._position = pos
+        # Kodi caches a parsed subtitle track by path — rotate the file name
+        # so the new {\\anN} override tag is re-parsed on next setSubtitles().
+        fname = 'chat-{}.srt'.format(_uuid.uuid4().hex[:8])
+        old_path = self._sub_path
+        self._sub_path = os.path.join(self._profile, fname)
+        xbmc.log(LOG_PREFIX + 'position changed to %s (file=%s)' % (pos, fname),
+                 xbmc.LOGINFO)
+        if self._lines:
+            try:
+                self._update_srt(xbmc.Player())
+            except Exception as exc:
+                xbmc.log(LOG_PREFIX + 'set_position update failed: %s' % exc,
+                         xbmc.LOGWARNING)
+        try:
+            xbmcvfs.delete(old_path)
+        except Exception:
+            pass
+
     def _run(self):
         from urllib.parse import quote
         player = xbmc.Player()

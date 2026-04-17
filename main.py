@@ -346,10 +346,12 @@ def play_video():
     _setup_inputstream(play_item, is_helper, hea)
     xbmcplugin.setResolvedUrl(plugin.handle, True, listitem=play_item)
 
-    # Chat overlay — only for live channel slugs (not VOD/clip URLs)
+    # Chat overlay — hand off live channel slug to the background service
+    # (regardless of current chat setting, so the toggle can be flipped
+    # mid-playback and take effect immediately).
     is_live = raw_url and not raw_url.startswith('http') and \
               not raw_url.endswith('.mp4') and not raw_url.endswith('.m3u8')
-    if is_live and addon.getSetting('chat') == 'true':
+    if is_live:
         xbmcgui.Window(10000).setProperty('kick.chat.slug', raw_url)
 
 
