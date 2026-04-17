@@ -153,12 +153,14 @@ def _ws_send(sock, data, opcode=0x1):
 class ChatOverlay:
     """Connect to Kick chat via Pusher WebSocket, render as SRT subtitles."""
 
-    def __init__(self, slug, api_get_func, profile_dir, channel_url_tpl, position='an3'):
+    def __init__(self, slug, api_get_func, profile_dir, channel_url_tpl,
+                 position='an3', size=10):
         self._slug = slug
         self._api_get = api_get_func
         self._profile = profile_dir
         self._channel_url_tpl = channel_url_tpl
         self._position = position if position in ('an1', 'an2', 'an3') else 'an3'
+        self._size = size if isinstance(size, int) and 4 <= size <= 40 else 10
         self._lines = deque(maxlen=MAX_LINES)
         # Unique filename per session — Kodi caches parsed subtitle tracks by
         # path, so changing only the file contents does not re-apply override
@@ -168,8 +170,8 @@ class ChatOverlay:
         self._stop = threading.Event()
         self._ws = None
         xbmcvfs.mkdirs(profile_dir)
-        xbmc.log(LOG_PREFIX + 'overlay init position={} file={}'.format(
-            self._position, fname), xbmc.LOGINFO)
+        xbmc.log(LOG_PREFIX + 'overlay init position=%s size=%s file=%s' % (
+            self._position, self._size, fname), xbmc.LOGINFO)
 
     def start(self):
         threading.Thread(target=self._run, daemon=True).start()
@@ -188,18 +190,35 @@ class ChatOverlay:
         if pos not in ('an1', 'an2', 'an3') or pos == self._position:
             return
         self._position = pos
+        self._rotate_and_refresh('position=%s' % pos)
+
+    def set_size(self, size):
+        """Update font size of existing chat lines at runtime."""
+        if not isinstance(size, int) or size == self._size or not (4 <= size <= 40):
+            return
+        # Rewrite already-cached lines with the new font size so the overlay
+        # updates even before the next chat message arrives.
+        new_lines = deque(maxlen=MAX_LINES)
+        for ln in self._lines:
+            new_lines.append(re.sub(
+                r'<font size="\d+">', '<font size="%d">' % size, ln, count=1))
+        self._lines = new_lines
+        self._size = size
+        self._rotate_and_refresh('size=%s' % size)
+
+    def _rotate_and_refresh(self, reason):
         # Kodi caches a parsed subtitle track by path — rotate the file name
-        # so the new {\\anN} override tag is re-parsed on next setSubtitles().
+        # so the updated override tags / font size are re-parsed.
         fname = 'chat-{}.srt'.format(_uuid.uuid4().hex[:8])
         old_path = self._sub_path
         self._sub_path = os.path.join(self._profile, fname)
-        xbmc.log(LOG_PREFIX + 'position changed to %s (file=%s)' % (pos, fname),
+        xbmc.log(LOG_PREFIX + 'rotate %s (file=%s)' % (reason, fname),
                  xbmc.LOGINFO)
         if self._lines:
             try:
                 self._update_srt(xbmc.Player())
             except Exception as exc:
-                xbmc.log(LOG_PREFIX + 'set_position update failed: %s' % exc,
+                xbmc.log(LOG_PREFIX + 'rotate update failed: %s' % exc,
                          xbmc.LOGWARNING)
         try:
             xbmcvfs.delete(old_path)
@@ -295,8 +314,8 @@ class ChatOverlay:
                 if not content:
                     continue
 
-                line = '<font size="10"><font color="#%s">%s:</font> %s</font>' % (
-                    color, username, content)
+                line = '<font size="%d"><font color="#%s">%s:</font> %s</font>' % (
+                    self._size, color, username, content)
                 self._lines.append(_wrap(line))
                 self._update_srt(player)
 

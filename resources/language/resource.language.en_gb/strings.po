@@ -321,3 +321,27 @@ msgstr "Right"
 msgctxt "#30105"
 msgid "Network error"
 msgstr "Network error"
+
+msgctxt "#30106"
+msgid "Chat font size"
+msgstr "Chat font size"
+
+msgctxt "#30107"
+msgid "Tiny"
+msgstr "Tiny"
+
+msgctxt "#30108"
+msgid "Small"
+msgstr "Small"
+
+msgctxt "#30109"
+msgid "Medium"
+msgstr "Medium"
+
+msgctxt "#30110"
+msgid "Large"
+msgstr "Large"
+
+msgctxt "#30111"
+msgid "Huge"
+msgstr "Huge"

@@ -321,3 +321,27 @@ msgstr "Vpravo"
 msgctxt "#30105"
 msgid "Network error"
 msgstr "Chyba sítě"
+
+msgctxt "#30106"
+msgid "Chat font size"
+msgstr "Velikost písma chatu"
+
+msgctxt "#30107"
+msgid "Tiny"
+msgstr "Drobné"
+
+msgctxt "#30108"
+msgid "Small"
+msgstr "Malé"
+
+msgctxt "#30109"
+msgid "Medium"
+msgstr "Střední"
+
+msgctxt "#30110"
+msgid "Large"
+msgstr "Velké"
+
+msgctxt "#30111"
+msgid "Huge"
+msgstr "Obří"

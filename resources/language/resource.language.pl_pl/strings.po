@@ -321,3 +321,27 @@ msgstr "Prawo"
 msgctxt "#30105"
 msgid "Network error"
 msgstr "Błąd sieci"
+
+msgctxt "#30106"
+msgid "Chat font size"
+msgstr "Rozmiar czcionki czatu"
+
+msgctxt "#30107"
+msgid "Tiny"
+msgstr "Drobny"
+
+msgctxt "#30108"
+msgid "Small"
+msgstr "Mały"
+
+msgctxt "#30109"
+msgid "Medium"
+msgstr "Średni"
+
+msgctxt "#30110"
+msgid "Large"
+msgstr "Duży"
+
+msgctxt "#30111"
+msgid "Huge"
+msgstr "Ogromny"

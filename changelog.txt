@@ -1,3 +1,9 @@
+3.2.0
+- feat: chat font size setting (Tiny/Small/Medium/Large/Huge, 8-16pt)
+- feat: font-size change applies live during playback — no stream restart needed
+- feat: already-displayed chat lines are re-rendered with the new size immediately
+- chore: new strings #30106–#30111 added to all 32 locales (en/cs/pl filled)
+
 3.1.2
 - feat: chat settings now apply live during playback — no need to restart stream
   - changing chat position (left/center/right) rewrites overlay with new alignment
