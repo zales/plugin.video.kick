@@ -308,15 +308,15 @@ msgstr "Pozice chatu"
 
 msgctxt "#30101"
 msgid "Left"
-msgstr "Vlevo"
+msgstr "Vlevo dole"
 
 msgctxt "#30102"
 msgid "Center"
-msgstr "Uprostřed"
+msgstr "Uprostřed dole"
 
 msgctxt "#30103"
 msgid "Right"
-msgstr "Vpravo"
+msgstr "Vpravo dole"
 
 msgctxt "#30105"
 msgid "Network error"
@@ -345,3 +345,27 @@ msgstr "Velké"
 msgctxt "#30111"
 msgid "Huge"
 msgstr "Obří"
+
+msgctxt "#30121"
+msgid "Top left"
+msgstr "Vlevo nahoře"
+
+msgctxt "#30122"
+msgid "Top center"
+msgstr "Uprostřed nahoře"
+
+msgctxt "#30123"
+msgid "Top right"
+msgstr "Vpravo nahoře"
+
+msgctxt "#30124"
+msgid "Middle left"
+msgstr "Vlevo"
+
+msgctxt "#30125"
+msgid "Middle center"
+msgstr "Uprostřed"
+
+msgctxt "#30126"
+msgid "Middle right"
+msgstr "Vpravo"

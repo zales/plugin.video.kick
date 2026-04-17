@@ -345,3 +345,27 @@ msgstr "Duży"
 msgctxt "#30111"
 msgid "Huge"
 msgstr "Ogromny"
+
+msgctxt "#30121"
+msgid "Top left"
+msgstr "Lewy górny"
+
+msgctxt "#30122"
+msgid "Top center"
+msgstr "Górny środek"
+
+msgctxt "#30123"
+msgid "Top right"
+msgstr "Prawy górny"
+
+msgctxt "#30124"
+msgid "Middle left"
+msgstr "Lewy środek"
+
+msgctxt "#30125"
+msgid "Middle center"
+msgstr "Środek"
+
+msgctxt "#30126"
+msgid "Middle right"
+msgstr "Prawy środek"

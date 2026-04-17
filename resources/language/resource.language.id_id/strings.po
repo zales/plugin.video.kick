@@ -333,3 +333,27 @@ msgstr ""
 msgctxt "#30111"
 msgid "Huge"
 msgstr ""
+
+msgctxt "#30121"
+msgid "Top left"
+msgstr ""
+
+msgctxt "#30122"
+msgid "Top center"
+msgstr ""
+
+msgctxt "#30123"
+msgid "Top right"
+msgstr ""
+
+msgctxt "#30124"
+msgid "Middle left"
+msgstr ""
+
+msgctxt "#30125"
+msgid "Middle center"
+msgstr ""
+
+msgctxt "#30126"
+msgid "Middle right"
+msgstr ""

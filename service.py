@@ -32,7 +32,9 @@ class ChatService(xbmc.Monitor):
         addon = xbmcaddon.Addon(id=ADDON_ID)
         enabled = addon.getSetting('chat') == 'true'
         position = (addon.getSetting('chat_pos') or 'an3').strip()
-        if position not in ('an1', 'an2', 'an3'):
+        # Valid positions match the POSITIONS dict in resources.lib.chat;
+        # keep this list in sync with settings.xml <options>.
+        if position not in ('an1', 'an3', 'an4', 'an6', 'an7', 'an9'):
             position = 'an3'
         try:
             size = int((addon.getSetting('chat_size') or '30').strip())
@@ -74,12 +76,17 @@ class ChatService(xbmc.Monitor):
             slug = self._window.getProperty(PROP_SLUG)
 
             # New chat request
-            if slug and self._overlay is None:
+            if slug:
                 self._window.clearProperty(PROP_SLUG)
-                self._current_slug = slug
-                enabled, position, size = self._read_settings()
-                if enabled:
-                    self._start(slug, position=position, size=size)
+                if slug != self._current_slug:
+                    xbmc.log('KICK service: slug change %s -> %s' % (
+                        self._current_slug, slug), xbmc.LOGINFO)
+                    if self._overlay:
+                        self._stop()
+                    self._current_slug = slug
+                    enabled, position, size = self._read_settings()
+                    if enabled:
+                        self._start(slug, position=position, size=size)
 
             # Playback stopped — tear down overlay + forget slug
             if not player.isPlaying():
@@ -90,7 +97,7 @@ class ChatService(xbmc.Monitor):
         self._stop()
         xbmc.log('KICK service: stopped', xbmc.LOGINFO)
 
-    def _start(self, slug, position='an3', size=10):
+    def _start(self, slug, position='an3', size=30):
         from resources.lib.chat import ChatOverlay
         addon = xbmcaddon.Addon(id=ADDON_ID)
         profile = xbmcvfs.translatePath(addon.getAddonInfo('profile'))
